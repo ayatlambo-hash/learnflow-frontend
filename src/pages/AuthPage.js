@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -26,7 +26,6 @@ function PasswordStrength({ password }) {
   const errors = validatePassword(password);
   const strength = 4 - errors.length;
   const colors = ['#e17055', '#e17055', '#fdcb6e', '#00b894', '#00b894'];
-  const labels = ['', 'Weak', 'Weak', 'Good', 'Strong'];
 
   return (
     <div style={{ marginTop: 8, marginBottom: 4 }}>
@@ -51,41 +50,45 @@ function PasswordStrength({ password }) {
 
 export default function AuthPage() {
   const [mode, setMode] = useState('login');
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', role: 'student', instructorCode: '' });
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState('student');
+  const [instructorCode, setInstructorCode] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const { login, register } = useAuth();
   const navigate = useNavigate();
 
-  const set = (k, v) => {
-    setForm(f => ({ ...f, [k]: v }));
-    setErrors(e => ({ ...e, [k]: '', general: '' }));
-  };
+  const clearError = useCallback((key) => {
+    setErrors(e => ({ ...e, [key]: '', general: '' }));
+  }, []);
+
+  const switchMode = useCallback((m) => {
+    setMode(m);
+    setErrors({});
+    setName(''); setEmail(''); setPassword('');
+    setConfirmPassword(''); setRole('student'); setInstructorCode('');
+  }, []);
 
   const validate = () => {
     const errs = {};
-
     if (mode === 'register') {
-      if (!form.name.trim()) errs.name = 'Name is required';
-      else if (form.name.trim().length < 2) errs.name = 'Name must be at least 2 characters';
-
-      const passErrors = validatePassword(form.password);
+      if (!name.trim()) errs.name = 'Name is required';
+      else if (name.trim().length < 2) errs.name = 'Name must be at least 2 characters';
+      const passErrors = validatePassword(password);
       if (passErrors.length > 0) errs.password = passErrors[0];
-
-      if (form.password !== form.confirmPassword) errs.confirmPassword = 'Passwords do not match';
-
-      if (form.role === 'instructor') {
-        if (!form.instructorCode) errs.instructorCode = 'Instructor code is required';
-        else if (form.instructorCode !== INSTRUCTOR_CODE) errs.instructorCode = 'Invalid instructor code';
+      if (password !== confirmPassword) errs.confirmPassword = 'Passwords do not match';
+      if (role === 'instructor') {
+        if (!instructorCode) errs.instructorCode = 'Instructor code is required';
+        else if (instructorCode !== INSTRUCTOR_CODE) errs.instructorCode = 'Invalid instructor code';
       }
     }
-
-    if (!form.email.trim()) errs.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Enter a valid email address';
-
-    if (!form.password) errs.password = 'Password is required';
-
+    if (!email.trim()) errs.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'Enter a valid email address';
+    if (!password) errs.password = 'Password is required';
     return errs;
   };
 
@@ -93,13 +96,12 @@ export default function AuthPage() {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
-
     setLoading(true);
     try {
       if (mode === 'login') {
-        await login(form.email, form.password);
+        await login(email, password);
       } else {
-        await register(form.name, form.email, form.password, form.role);
+        await register(name, email, password, role);
       }
       navigate('/');
     } catch (err) {
@@ -118,32 +120,9 @@ export default function AuthPage() {
     }
   };
 
-  const Field = ({ name, label, type = 'text', placeholder, right }) => (
-    <div style={{ marginBottom: 14 }}>
-      <label style={{ color: T.text2, fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 5 }}>{label}</label>
-      <div style={{ position: 'relative' }}>
-        <input
-          type={type === 'password' ? (showPass ? 'text' : 'password') : type}
-          value={form[name]}
-          onChange={e => set(name, e.target.value)}
-          placeholder={placeholder}
-          style={{ width: '100%', background: errors[name] ? T.red + '08' : T.bg2, border: `1.5px solid ${errors[name] ? T.red : T.border}`, borderRadius: 10, padding: '11px 14px', paddingRight: right ? 44 : 14, color: T.text, fontSize: 14, outline: 'none', fontFamily: "'Nunito', sans-serif", boxSizing: 'border-box', transition: 'border-color 0.2s' }}
-        />
-        {type === 'password' && (
-          <button type="button" onClick={() => setShowPass(s => !s)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: T.text3, fontSize: 16 }}>
-            {showPass ? '🙈' : '👁️'}
-          </button>
-        )}
-      </div>
-      {errors[name] && <div style={{ color: T.red, fontSize: 11, marginTop: 4 }}>✕ {errors[name]}</div>}
-      {name === 'password' && mode === 'register' && <PasswordStrength password={form.password} />}
-    </div>
-  );
-
   return (
     <div style={{ minHeight: '100vh', background: `linear-gradient(135deg, ${T.purple}15, ${T.bg})`, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: "'Nunito', sans-serif" }}>
       <div style={{ width: '100%', maxWidth: 440 }}>
-        {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ width: 60, height: 60, borderRadius: 20, background: `linear-gradient(135deg, ${T.purple}, #fd79a8)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, margin: '0 auto 14px', boxShadow: `0 8px 24px ${T.purple}33` }}>🎓</div>
           <div style={{ fontWeight: 900, fontSize: 26, color: T.text, letterSpacing: '-0.02em' }}>LearnFlow</div>
@@ -151,10 +130,9 @@ export default function AuthPage() {
         </div>
 
         <div style={{ background: T.bg1, border: `1.5px solid ${T.border}`, borderRadius: 22, padding: 32, boxShadow: '0 8px 40px rgba(108,92,231,0.10)' }}>
-          {/* Tabs */}
           <div style={{ display: 'flex', background: T.bg2, borderRadius: 12, padding: 4, marginBottom: 26 }}>
             {['login', 'register'].map(m => (
-              <button key={m} type="button" onClick={() => { setMode(m); setErrors({}); setForm({ name: '', email: '', password: '', confirmPassword: '', role: 'student', instructorCode: '' }); }}
+              <button key={m} type="button" onClick={() => switchMode(m)}
                 style={{ flex: 1, padding: '9px', borderRadius: 10, border: 'none', background: mode === m ? T.bg1 : 'transparent', color: mode === m ? T.purple : T.text3, fontWeight: mode === m ? 800 : 600, cursor: 'pointer', fontSize: 14, transition: 'all 0.2s', fontFamily: "'Nunito', sans-serif", boxShadow: mode === m ? '0 2px 8px rgba(108,92,231,0.10)' : 'none' }}>
                 {m === 'login' ? '🔑 Sign In' : '✨ Register'}
               </button>
@@ -163,34 +141,86 @@ export default function AuthPage() {
 
           <form onSubmit={submit}>
             {mode === 'register' && (
-              <Field name="name" label="Full Name" placeholder="Your full name" />
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ color: T.text2, fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 5 }}>Full Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => { setName(e.target.value); clearError('name'); }}
+                  placeholder="Your full name"
+                  style={{ width: '100%', background: errors.name ? T.red + '08' : T.bg2, border: `1.5px solid ${errors.name ? T.red : T.border}`, borderRadius: 10, padding: '11px 14px', color: T.text, fontSize: 14, outline: 'none', fontFamily: "'Nunito', sans-serif", boxSizing: 'border-box' }}
+                />
+                {errors.name && <div style={{ color: T.red, fontSize: 11, marginTop: 4 }}>✕ {errors.name}</div>}
+              </div>
             )}
 
-            <Field name="email" label="Email" type="email" placeholder="you@example.com" />
-            <Field name="password" label="Password" type="password" placeholder={mode === 'register' ? 'Min 8 chars, uppercase, number...' : 'Your password'} right />
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ color: T.text2, fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 5 }}>Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => { setEmail(e.target.value); clearError('email'); }}
+                placeholder="you@example.com"
+                style={{ width: '100%', background: errors.email ? T.red + '08' : T.bg2, border: `1.5px solid ${errors.email ? T.red : T.border}`, borderRadius: 10, padding: '11px 14px', color: T.text, fontSize: 14, outline: 'none', fontFamily: "'Nunito', sans-serif", boxSizing: 'border-box' }}
+              />
+              {errors.email && <div style={{ color: T.red, fontSize: 11, marginTop: 4 }}>✕ {errors.email}</div>}
+            </div>
+
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ color: T.text2, fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 5 }}>Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => { setPassword(e.target.value); clearError('password'); }}
+                  placeholder={mode === 'register' ? 'Min 8 chars, uppercase, number...' : 'Your password'}
+                  style={{ width: '100%', background: errors.password ? T.red + '08' : T.bg2, border: `1.5px solid ${errors.password ? T.red : T.border}`, borderRadius: 10, padding: '11px 44px 11px 14px', color: T.text, fontSize: 14, outline: 'none', fontFamily: "'Nunito', sans-serif", boxSizing: 'border-box' }}
+                />
+                <button type="button" onClick={() => setShowPass(s => !s)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16 }}>
+                  {showPass ? '🙈' : '👁️'}
+                </button>
+              </div>
+              {errors.password && <div style={{ color: T.red, fontSize: 11, marginTop: 4 }}>✕ {errors.password}</div>}
+              {mode === 'register' && <PasswordStrength password={password} />}
+            </div>
 
             {mode === 'register' && (
               <>
-                <Field name="confirmPassword" label="Confirm Password" type="password" placeholder="Repeat your password" right />
+                <div style={{ marginBottom: 14 }}>
+                  <label style={{ color: T.text2, fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 5 }}>Confirm Password</label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showPass ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={e => { setConfirmPassword(e.target.value); clearError('confirmPassword'); }}
+                      placeholder="Repeat your password"
+                      style={{ width: '100%', background: errors.confirmPassword ? T.red + '08' : T.bg2, border: `1.5px solid ${errors.confirmPassword ? T.red : T.border}`, borderRadius: 10, padding: '11px 44px 11px 14px', color: T.text, fontSize: 14, outline: 'none', fontFamily: "'Nunito', sans-serif", boxSizing: 'border-box' }}
+                    />
+                    <button type="button" onClick={() => setShowPass(s => !s)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16 }}>
+                      {showPass ? '🙈' : '👁️'}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && <div style={{ color: T.red, fontSize: 11, marginTop: 4 }}>✕ {errors.confirmPassword}</div>}
+                </div>
 
                 <div style={{ marginBottom: 14 }}>
                   <label style={{ color: T.text2, fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 8 }}>I am a...</label>
                   <div style={{ display: 'flex', gap: 8 }}>
                     {['student', 'instructor'].map(r => (
-                      <button key={r} type="button" onClick={() => set('role', r)} style={{ flex: 1, padding: '10px 8px', borderRadius: 12, border: `2px solid ${form.role === r ? T.purple : T.border}`, background: form.role === r ? T.purple + '15' : T.bg2, cursor: 'pointer', fontFamily: "'Nunito', sans-serif", fontSize: 13, fontWeight: 700, color: form.role === r ? T.purple : T.text3, transition: 'all 0.15s' }}>
+                      <button key={r} type="button" onClick={() => setRole(r)} style={{ flex: 1, padding: '10px 8px', borderRadius: 12, border: `2px solid ${role === r ? T.purple : T.border}`, background: role === r ? T.purple + '15' : T.bg2, cursor: 'pointer', fontFamily: "'Nunito', sans-serif", fontSize: 13, fontWeight: 700, color: role === r ? T.purple : T.text3, transition: 'all 0.15s' }}>
                         {r === 'student' ? '🎓 Student' : '👨‍🏫 Instructor'}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {form.role === 'instructor' && (
+                {role === 'instructor' && (
                   <div style={{ marginBottom: 14 }}>
                     <label style={{ color: T.text2, fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 5 }}>Instructor Code</label>
                     <input
                       type="password"
-                      value={form.instructorCode}
-                      onChange={e => set('instructorCode', e.target.value)}
+                      value={instructorCode}
+                      onChange={e => { setInstructorCode(e.target.value); clearError('instructorCode'); }}
                       placeholder="Enter secret instructor code"
                       style={{ width: '100%', background: errors.instructorCode ? T.red + '08' : T.bg2, border: `1.5px solid ${errors.instructorCode ? T.red : T.amber}`, borderRadius: 10, padding: '11px 14px', color: T.text, fontSize: 14, outline: 'none', fontFamily: "'Nunito', sans-serif", boxSizing: 'border-box' }}
                     />
@@ -217,7 +247,7 @@ export default function AuthPage() {
 
         <div style={{ textAlign: 'center', marginTop: 20, color: T.text3, fontSize: 13 }}>
           {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-          <button type="button" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setErrors({}); }} style={{ background: 'none', border: 'none', color: T.purple, cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+          <button type="button" onClick={() => switchMode(mode === 'login' ? 'register' : 'login')} style={{ background: 'none', border: 'none', color: T.purple, cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
             {mode === 'login' ? 'Register' : 'Sign In'}
           </button>
         </div>
