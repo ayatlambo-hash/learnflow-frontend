@@ -11,12 +11,6 @@ const T = {
   red: "#e17055", blue: "#0984e3", teal: "#00cec9",
 };
 
-const SECTIONS = [
-  { id: 1, title: "Beginner", emoji: "🌱", color: "#00b894" },
-  { id: 2, title: "Intermediate", emoji: "🚀", color: "#6c5ce7" },
-  { id: 3, title: "Advanced", emoji: "⚡", color: "#fd79a8" },
-];
-
 const DEMO_STUDENTS = [
   { id: 1, name: "Aisha N.", av: "AN", col: "#6c5ce7", prog: 78, grade: "A", active: "2h ago" },
   { id: 2, name: "Damir S.", av: "DS", col: "#00b894", prog: 62, grade: "B+", active: "1h ago" },
@@ -25,12 +19,6 @@ const DEMO_STUDENTS = [
   { id: 5, name: "Madina O.", av: "MO", col: "#fdcb6e", prog: 28, grade: "D", active: "1w ago" },
 ];
 
-let CHAT_MSGS = [
-  { id: 1, author: "Instructor", av: "IN", col: T.purple, msg: "Welcome everyone! 🎉 Ask anything here anytime!", self: false, time: "09:00" },
-  { id: 2, author: "Zarina B.", av: "ZB", col: T.pink, msg: "Thank you! Really enjoying the course 😊", self: false, time: "09:12" },
-];
-
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
 function Av({ name, color, size = 34 }) {
   const ini = (name || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
   return (
@@ -87,92 +75,75 @@ function Modal({ children, onClose, title }) {
   );
 }
 
-// ─── VIDEO MODAL ──────────────────────────────────────────────────────────────
+function getYouTubeId(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?\s]+)/);
+  return match ? match[1] : null;
+}
+
 function VideoModal({ lesson, onClose, onComplete }) {
-  const [playing, setPlaying] = useState(false);
-  const [prog, setProg] = useState(0);
-  const iv = useRef(null);
-  const toggle = () => {
-    if (playing) { clearInterval(iv.current); setPlaying(false); }
-    else {
-      setPlaying(true);
-      iv.current = setInterval(() => setProg(p => {
-        if (p >= 100) { clearInterval(iv.current); setPlaying(false); onComplete && onComplete(); return 100; }
-        return p + 0.4;
-      }), 300);
-    }
-  };
-  useEffect(() => () => clearInterval(iv.current), []);
+  const ytId = getYouTubeId(lesson.video_url);
   return (
     <Modal onClose={onClose} title={lesson.title}>
-      <div style={{ background: "linear-gradient(135deg,#1a1f3a,#2d3561)", borderRadius: 14, aspectRatio: "16/9", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12, marginBottom: 16 }}>
-        <div style={{ fontSize: 52 }}>🎬</div>
-        <div style={{ color: "#ffffff88", fontSize: 13 }}>{lesson.title}</div>
-      </div>
-      <div style={{ height: 6, background: T.bg3, borderRadius: 99, cursor: "pointer", marginBottom: 14 }} onClick={e => { const r = e.currentTarget.getBoundingClientRect(); setProg(((e.clientX - r.left) / r.width) * 100); }}>
-        <div style={{ height: "100%", width: `${prog}%`, background: `linear-gradient(90deg,${T.purple},${T.pink})`, borderRadius: 99 }} />
+      <div style={{ borderRadius: 14, overflow: "hidden", aspectRatio: "16/9", marginBottom: 16, background: "#000" }}>
+        {ytId ? (
+          <iframe
+            width="100%" height="100%"
+            src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+            title={lesson.title}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{ display: "block" }}
+          />
+        ) : (
+          <div style={{ background: "linear-gradient(135deg,#1a1f3a,#2d3561)", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12 }}>
+            <div style={{ fontSize: 52 }}>🎬</div>
+            <div style={{ color: "#ffffff88", fontSize: 13 }}>{lesson.video_url ? "Invalid YouTube URL" : "No video URL provided"}</div>
+          </div>
+        )}
       </div>
       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-        <button onClick={toggle} style={{ background: `linear-gradient(135deg,${T.purple},${T.pink})`, border: "none", borderRadius: "50%", width: 42, height: 42, color: "#fff", fontSize: 14, cursor: "pointer" }}>
-          {playing ? "⏸" : "▶"}
-        </button>
-        <span style={{ color: T.text2, fontSize: 13 }}>{lesson.duration || "00:00"}</span>
-        <button onClick={onClose} style={{ marginLeft: "auto", background: T.bg3, border: `1.5px solid ${T.border}`, borderRadius: 10, color: T.text2, padding: "7px 16px", cursor: "pointer", fontFamily: "'Nunito',sans-serif", fontWeight: 600 }}>Close</button>
+        <span style={{ color: T.text2, fontSize: 13 }}>{lesson.duration || ""}</span>
+        <button onClick={() => { onComplete && onComplete(); onClose(); }} style={{ marginLeft: "auto", background: T.green, border: "none", borderRadius: 10, color: "#fff", padding: "7px 16px", cursor: "pointer", fontFamily: "'Nunito',sans-serif", fontWeight: 700 }}>✓ Mark Complete</button>
+        <button onClick={onClose} style={{ background: T.bg3, border: `1.5px solid ${T.border}`, borderRadius: 10, color: T.text2, padding: "7px 16px", cursor: "pointer", fontFamily: "'Nunito',sans-serif", fontWeight: 600 }}>Close</button>
       </div>
     </Modal>
   );
 }
 
-// ─── QUIZ MODAL ───────────────────────────────────────────────────────────────
 function QuizModal({ lesson, onClose, onComplete }) {
-  const qs = lesson.questions || [];
-  const [cur, setCur] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [done, setDone] = useState(false);
-  if (qs.length === 0) return <Modal onClose={onClose} title="Quiz"><div style={{ textAlign: "center", padding: 20, color: T.text3 }}>No questions added yet!</div></Modal>;
-  const q = qs[cur];
-  const opts = Array.isArray(q.options) ? q.options : JSON.parse(q.options || "[]");
-  const score = Math.round(Object.entries(answers).filter(([i, a]) => qs[i]?.correct_index === a).length / qs.length * 100);
-  if (done) {
-    onComplete && onComplete(score);
+  const formUrl = lesson.video_url || lesson.form_url || "";
+  if (!formUrl) {
     return (
       <Modal onClose={onClose} title={lesson.title}>
-        <div style={{ textAlign: "center", padding: 20 }}>
-          <div style={{ fontSize: 60, marginBottom: 12 }}>{score >= 70 ? "🎉" : "📚"}</div>
-          <div style={{ fontSize: 36, fontWeight: 800, color: score >= 70 ? T.green : T.amber, marginBottom: 8 }}>{score}%</div>
-          <div style={{ color: T.text2, marginBottom: 24 }}>{score >= 70 ? "Passed! Great work!" : "Keep studying!"}</div>
-          <Btn onClick={onClose}>Done</Btn>
+        <div style={{ textAlign: "center", padding: 20, color: T.text3 }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>📋</div>
+          <div>No test link added yet.</div>
         </div>
       </Modal>
     );
   }
-  const pick = (i) => {
-    if (answers[cur] !== undefined) return;
-    setAnswers(a => ({ ...a, [cur]: i }));
-    setTimeout(() => { if (cur < qs.length - 1) setCur(c => c + 1); else setDone(true); }, 700);
-  };
   return (
     <Modal onClose={onClose} title={lesson.title}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-        <Chip label={`Q ${cur + 1} / ${qs.length}`} color={T.purple} />
-      </div>
-      <Bar val={(cur / qs.length) * 100} color={T.purple} h={8} />
-      <div style={{ color: T.text, fontSize: 17, fontWeight: 700, margin: "18px 0 14px", lineHeight: 1.5 }}>{q.question}</div>
-      {opts.map((opt, i) => {
-        const sel = answers[cur] === i;
-        const correct = answers[cur] !== undefined && i === q.correct_index;
-        const wrong = sel && i !== q.correct_index;
-        return (
-          <button key={i} onClick={() => pick(i)} style={{ width: "100%", background: correct ? T.green + "18" : wrong ? T.red + "18" : sel ? T.purple + "18" : T.bg2, border: `2px solid ${correct ? T.green : wrong ? T.red : sel ? T.purple : T.border}`, borderRadius: 12, padding: "12px 16px", color: correct ? T.green : wrong ? T.red : sel ? T.purple : T.text2, textAlign: "left", cursor: "pointer", fontSize: 14, fontWeight: 600, marginBottom: 8, fontFamily: "'Nunito',sans-serif", transition: "all 0.2s" }}>
-            <span style={{ opacity: 0.5, marginRight: 8 }}>{String.fromCharCode(65 + i)}.</span>{opt}
+      <div style={{ textAlign: "center", padding: 20 }}>
+        <div style={{ fontSize: 52, marginBottom: 16 }}>📋</div>
+        <div style={{ color: T.text2, fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
+          Click the button below to open the test in a new tab. Come back here when you are done!
+        </div>
+        <a href={formUrl} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", background: T.purple, color: "#fff", borderRadius: 12, padding: "12px 28px", fontWeight: 800, fontSize: 15, textDecoration: "none", marginBottom: 16 }}>
+          📝 Open Test
+        </a>
+        <div style={{ marginTop: 16 }}>
+          <button onClick={() => { onComplete && onComplete(100); onClose(); }} style={{ background: T.green, border: "none", borderRadius: 10, color: "#fff", padding: "9px 20px", cursor: "pointer", fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: 13 }}>
+            ✓ Mark as Completed
           </button>
-        );
-      })}
+        </div>
+      </div>
     </Modal>
   );
 }
 
-// ─── UPLOAD MODAL ─────────────────────────────────────────────────────────────
 function UploadModal({ lesson, onClose, onComplete }) {
   const [files, setFiles] = useState([]);
   const [drag, setDrag] = useState(false);
@@ -222,14 +193,76 @@ function UploadModal({ lesson, onClose, onComplete }) {
   );
 }
 
-// ─── MODULES TAB ──────────────────────────────────────────────────────────────
+function CourseNavTab({ isInstructor, onOpenLesson }) {
+  const [modules, setModules] = useState([]);
+  const [expanded, setExpanded] = useState({});
+  const [lessons, setLessons] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get("/modules").then(r => { setModules(r.data); setLoading(false); });
+  }, []);
+
+  const toggleModule = async (mod) => {
+    const isOpen = expanded[mod.id];
+    setExpanded(e => ({ ...e, [mod.id]: !isOpen }));
+    if (!isOpen && !lessons[mod.id]) {
+      const r = await api.get(`/modules/${mod.id}/lessons`);
+      setLessons(l => ({ ...l, [mod.id]: r.data }));
+    }
+  };
+
+  if (loading) return <div style={{ color: T.text3, padding: 20 }}>Loading...</div>;
+
+  return (
+    <div>
+      <div style={{ fontWeight: 800, fontSize: 18, color: T.text, marginBottom: 20 }}>📚 Course Structure</div>
+      {modules.map((mod, mi) => (
+        <div key={mod.id} style={{ marginBottom: 8 }}>
+          <div onClick={() => toggleModule(mod)}
+            style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", background: expanded[mod.id] ? mod.color + "15" : T.bg1, border: `2px solid ${expanded[mod.id] ? mod.color + "44" : T.border}`, borderRadius: expanded[mod.id] ? "14px 14px 0 0" : 14, cursor: "pointer", transition: "all 0.2s" }}>
+            <div style={{ width: 36, height: 36, borderRadius: 12, background: mod.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: mod.color, flexShrink: 0 }}>{mod.icon}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 800, fontSize: 14, color: T.text }}>{mod.title}</div>
+              <div style={{ color: T.text3, fontSize: 12 }}>{mod.lesson_count} lessons · {mod.progress || 0}% done</div>
+            </div>
+            <span style={{ color: mod.color, fontSize: 18, transition: "transform 0.2s", display: "inline-block", transform: expanded[mod.id] ? "rotate(90deg)" : "none" }}>›</span>
+          </div>
+          {expanded[mod.id] && (
+            <div style={{ border: `2px solid ${mod.color}44`, borderTop: "none", borderRadius: "0 0 14px 14px", overflow: "hidden" }}>
+              {(lessons[mod.id] || []).map((lesson, li) => (
+                <div key={lesson.id} onClick={() => lesson.type !== "reading" && onOpenLesson(lesson, mod)}
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 18px 11px 32px", background: lesson.done ? T.green + "08" : T.bg2, borderTop: `1px solid ${T.border}`, cursor: lesson.type !== "reading" ? "pointer" : "default" }}>
+                  <div style={{ width: 24, height: 24, borderRadius: "50%", background: lesson.done ? T.green + "22" : T.bg3, border: `2px solid ${lesson.done ? T.green : T.border2}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: lesson.done ? T.green : T.text3, fontWeight: 800, flexShrink: 0 }}>
+                    {lesson.done ? "✓" : li + 1}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>{lesson.title}</div>
+                    <div style={{ fontSize: 11, color: T.text3 }}>
+                      {lesson.type === "video" ? "▶ Video" : lesson.type === "quiz" ? "📋 Test" : lesson.type === "assignment" ? "↑ Assignment" : "◎ Reading"}
+                      {lesson.duration && ` · ${lesson.duration}`}
+                    </div>
+                  </div>
+                  {!lesson.done && lesson.type !== "reading" && <span style={{ color: T.text3, fontSize: 14 }}>›</span>}
+                </div>
+              ))}
+              {(lessons[mod.id] || []).length === 0 && (
+                <div style={{ padding: "16px 32px", color: T.text3, fontSize: 13 }}>No lessons yet.</div>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ModulesTab({ isInstructor }) {
   const [modules, setModules] = useState([]);
   const [openMod, setOpenMod] = useState(null);
   const [lessons, setLessons] = useState([]);
   const [activeLesson, setActiveLesson] = useState(null);
   const [loading, setLoading] = useState(true);
-  // Instructor add states
   const [addingMod, setAddingMod] = useState(false);
   const [addingLesson, setAddingLesson] = useState(false);
   const [modForm, setModForm] = useState({});
@@ -257,55 +290,63 @@ function ModulesTab({ isInstructor }) {
 
   const saveLesson = async () => {
     if (!lesForm.title || !openMod) return;
-    const r = await api.post(`/modules/${openMod.id}/lessons`, { title: lesForm.title, type: lesForm.type || "video", video_url: lesForm.url, duration: lesForm.dur, pages: lesForm.pages, deadline: lesForm.deadline, order_index: lessons.length });
+    let deadline = null;
+    if (lesForm.deadline) {
+      const d = new Date(lesForm.deadline);
+      if (!isNaN(d.getTime())) deadline = d.toISOString().split('T')[0];
+    }
+    const r = await api.post(`/modules/${openMod.id}/lessons`, {
+      title: lesForm.title, type: lesForm.type || "video",
+      video_url: lesForm.url, duration: lesForm.dur,
+      pages: lesForm.pages, deadline, order_index: lessons.length
+    });
     setLessons(ls => [...ls, { ...r.data, done: false, questions: [] }]);
     setLesForm({}); setAddingLesson(false);
   };
 
   if (loading) return <div style={{ color: T.text3, padding: 20 }}>Loading modules...</div>;
 
-  // Module detail view
   if (openMod) return (
     <div>
       {activeLesson?.type === "video" && <VideoModal lesson={activeLesson} onClose={() => setActiveLesson(null)} onComplete={() => markDone(activeLesson.id)} />}
       {activeLesson?.type === "quiz" && <QuizModal lesson={activeLesson} onClose={() => setActiveLesson(null)} onComplete={score => markDone(activeLesson.id, score)} />}
       {activeLesson?.type === "assignment" && <UploadModal lesson={activeLesson} onClose={() => setActiveLesson(null)} onComplete={() => markDone(activeLesson.id)} />}
       {addingLesson && (
-        <Modal onClose={() => setAddingLesson(false)} title="➕ Add Lesson">
+        <Modal onClose={() => setAddingLesson(false)} title="Add Lesson">
           <div style={{ marginBottom: 14 }}>
             <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Type</div>
             <div style={{ display: "flex", gap: 8 }}>
               {["video", "quiz", "assignment", "reading"].map(t => (
                 <button key={t} onClick={() => setLesForm(f => ({ ...f, type: t }))} style={{ flex: 1, padding: "8px 4px", borderRadius: 10, border: `2px solid ${lesForm.type === t ? T.purple : T.border}`, background: lesForm.type === t ? T.purple + "18" : T.bg2, cursor: "pointer", fontSize: 11, fontWeight: 700, color: lesForm.type === t ? T.purple : T.text3, fontFamily: "'Nunito',sans-serif" }}>
-                  {t === "video" ? "▶ Video" : t === "quiz" ? "✦ Quiz" : t === "assignment" ? "↑ Task" : "◎ Reading"}
+                  {t === "video" ? "▶ Video" : t === "quiz" ? "📋 Test" : t === "assignment" ? "↑ Task" : "◎ Reading"}
                 </button>
               ))}
             </div>
           </div>
-          {[["title", "Lesson Title", "e.g. Introduction"], ["dur", "Duration", "e.g. 12:30"], ["deadline", "Deadline", "e.g. June 30"], ["url", "Video URL", "https://youtube.com/..."]].map(([k, l, p]) => (
+          {[
+            ["title", "Lesson Title", "e.g. Introduction"],
+            ["dur", "Duration", "e.g. 12:30"],
+            ["deadline", "Deadline", "YYYY-MM-DD (e.g. 2025-06-30)"],
+            ["url", lesForm.type === "quiz" ? "Google Form URL" : "Video URL", lesForm.type === "quiz" ? "https://forms.google.com/..." : "https://youtube.com/..."]
+          ].map(([k, l, p]) => (
             <div key={k} style={{ marginBottom: 12 }}>
               <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>{l}</div>
               <input value={lesForm[k] || ""} onChange={e => setLesForm(f => ({ ...f, [k]: e.target.value }))} placeholder={p} style={{ width: "100%", background: T.bg2, border: `1.5px solid ${T.border}`, borderRadius: 10, padding: "10px 14px", color: T.text, fontSize: 14, outline: "none", fontFamily: "'Nunito',sans-serif", boxSizing: "border-box" }} />
             </div>
           ))}
-          <Btn onClick={saveLesson} color={T.green}>✓ Save Lesson</Btn>
+          <Btn onClick={saveLesson} color={T.green}>Save Lesson</Btn>
         </Modal>
       )}
       <button onClick={() => setOpenMod(null)} style={{ background: "none", border: "none", color: T.purple, cursor: "pointer", fontSize: 13, fontWeight: 700, marginBottom: 20, padding: 0, fontFamily: "'Nunito',sans-serif" }}>← All Modules</button>
-      <Card style={{ marginBottom: 20, background: `linear-gradient(135deg,${openMod.color}12,${T.bg1})`, border: `2px solid ${openMod.color}33` }}>
-        <div style={{ display: "flex", gap: 14, alignItems: "center", marginBottom: 14 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 16, background: openMod.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 800, color: openMod.color }}>{openMod.icon}</div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 800, fontSize: 18, color: T.text, marginBottom: 3 }}>{openMod.title}</div>
-            <div style={{ color: T.text2, fontSize: 13 }}>{openMod.description}</div>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 26, fontWeight: 800, color: openMod.color }}>{openMod.progress || 0}%</div>
-            <div style={{ color: T.text3, fontSize: 11 }}>complete</div>
-          </div>
+      <div style={{ borderRadius: 20, overflow: "hidden", marginBottom: 20, background: `linear-gradient(135deg,${openMod.color},${openMod.color}88)`, padding: "28px 24px", color: "#fff" }}>
+        <div style={{ fontSize: 40, marginBottom: 8 }}>{openMod.icon}</div>
+        <div style={{ fontWeight: 900, fontSize: 22, marginBottom: 4 }}>{openMod.title}</div>
+        <div style={{ opacity: 0.8, fontSize: 14, marginBottom: 16 }}>{openMod.description}</div>
+        <div style={{ background: "rgba(255,255,255,0.2)", borderRadius: 99, height: 8, marginBottom: 8 }}>
+          <div style={{ height: "100%", width: `${openMod.progress || 0}%`, background: "#fff", borderRadius: 99 }} />
         </div>
-        <Bar val={openMod.progress} color={openMod.color} h={8} />
-      </Card>
+        <div style={{ fontSize: 13, opacity: 0.9 }}>{openMod.progress || 0}% complete</div>
+      </div>
       {isInstructor && <div style={{ marginBottom: 14 }}><Btn onClick={() => setAddingLesson(true)} color={openMod.color}>+ Add Lesson</Btn></div>}
       {lessons.map((lesson, i) => (
         <Card key={lesson.id} style={{ marginBottom: 10, display: "flex", gap: 14, alignItems: "center", opacity: lesson.done ? 0.8 : 1, cursor: lesson.type !== "reading" ? "pointer" : "default" }}
@@ -316,7 +357,7 @@ function ModulesTab({ isInstructor }) {
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 4 }}>{lesson.title}</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-              <Chip label={lesson.type} color={openMod.color} />
+              <Chip label={lesson.type === "quiz" ? "📋 Test" : lesson.type} color={openMod.color} />
               {lesson.duration && <span style={{ color: T.text3, fontSize: 11 }}>⏱ {lesson.duration}</span>}
               {lesson.deadline && <span style={{ color: T.amber, fontSize: 11 }}>⏰ {lesson.deadline}</span>}
               {lesson.score != null && <span style={{ color: T.green, fontSize: 11 }}>Score: {lesson.score}%</span>}
@@ -329,13 +370,12 @@ function ModulesTab({ isInstructor }) {
     </div>
   );
 
-  // Modules list grouped by section
   const COLORS = ["#6c5ce7", "#00b894", "#fd79a8", "#0984e3", "#fdcb6e", "#e17055", "#00cec9"];
   const EMOJIS = ["📚", "🎯", "🚀", "⭐", "🔮", "🌿", "🏆", "🛠️", "💡", "🎓"];
   return (
     <div>
       {addingMod && (
-        <Modal onClose={() => setAddingMod(false)} title="✨ New Module">
+        <Modal onClose={() => setAddingMod(false)} title="New Module">
           {[["title", "Module Title", "e.g. Module 1: Foundations"], ["desc", "Description", "Brief description..."]].map(([k, l, p]) => (
             <div key={k} style={{ marginBottom: 12 }}>
               <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>{l}</div>
@@ -354,43 +394,32 @@ function ModulesTab({ isInstructor }) {
               {EMOJIS.map(e => <button key={e} onClick={() => setModForm(f => ({ ...f, emoji: e }))} style={{ width: 38, height: 38, borderRadius: 10, border: `2px solid ${modForm.emoji === e ? T.purple : T.border}`, background: modForm.emoji === e ? T.purple + "18" : T.bg2, cursor: "pointer", fontSize: 18 }}>{e}</button>)}
             </div>
           </div>
-          <Btn onClick={saveModule} color={T.green}>✓ Create Module</Btn>
+          <Btn onClick={saveModule} color={T.green}>Create Module</Btn>
         </Modal>
       )}
       {isInstructor && <div style={{ marginBottom: 20 }}><Btn onClick={() => setAddingMod(true)}>+ New Module</Btn></div>}
-      {SECTIONS.map(sec => {
-        const secMods = modules.filter((_, i) => (i % 3) === sec.id - 1);
-        const allMods = sec.id === 1 ? modules.slice(0, Math.ceil(modules.length / 2)) : sec.id === 2 ? modules.slice(Math.ceil(modules.length / 2)) : [];
-        const show = modules.length > 0 ? (sec.id === 1 ? modules.filter((_, i) => i % 3 === 0) : sec.id === 2 ? modules.filter((_, i) => i % 3 === 1) : modules.filter((_, i) => i % 3 === 2)) : [];
-        return (
-          <div key={sec.id} style={{ marginBottom: 28 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, padding: "10px 16px", background: sec.color + "12", border: `1.5px solid ${sec.color}33`, borderRadius: 14 }}>
-              <span style={{ fontSize: 20 }}>{sec.emoji}</span>
-              <div style={{ fontWeight: 800, fontSize: 14, color: sec.color }}>{sec.title}</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 16 }}>
+        {modules.map(m => (
+          <Card key={m.id} onClick={() => openModule(m)} style={{ padding: 0, overflow: "hidden", border: `2px solid ${m.color}22` }}>
+            <div style={{ height: 80, background: `linear-gradient(135deg,${m.color},${m.color}88)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>
+              {m.icon}
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 12 }}>
-              {show.map(m => (
-                <Card key={m.id} onClick={() => openModule(m)} style={{ background: `linear-gradient(135deg,${m.color}10,${T.bg1})`, border: `2px solid ${m.color}22` }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                    <div style={{ width: 44, height: 44, borderRadius: 14, background: m.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 800, color: m.color }}>{m.icon}</div>
-                    <Chip label={`${m.progress || 0}%`} color={m.color} />
-                  </div>
-                  <div style={{ fontWeight: 800, fontSize: 14, color: T.text, marginBottom: 4 }}>{m.title}</div>
-                  <div style={{ color: T.text2, fontSize: 12, marginBottom: 12 }}>{m.description}</div>
-                  <Bar val={m.progress} color={m.color} h={6} />
-                  <div style={{ color: T.text3, fontSize: 11, marginTop: 8 }}>{m.lesson_count} lessons</div>
-                </Card>
-              ))}
-              {show.length === 0 && <div style={{ color: T.text3, fontSize: 13, padding: "8px 0" }}>No modules here yet.</div>}
+            <div style={{ padding: "16px 18px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, alignItems: "flex-start" }}>
+                <div style={{ fontWeight: 800, fontSize: 14, color: T.text, flex: 1 }}>{m.title}</div>
+                <Chip label={`${m.progress || 0}%`} color={m.color} />
+              </div>
+              <div style={{ color: T.text2, fontSize: 12, marginBottom: 12 }}>{m.description}</div>
+              <Bar val={m.progress} color={m.color} h={6} />
+              <div style={{ color: T.text3, fontSize: 11, marginTop: 8 }}>{m.lesson_count} lessons</div>
             </div>
-          </div>
-        );
-      })}
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
 
-// ─── CHAT TAB ─────────────────────────────────────────────────────────────────
 function ChatTab({ user }) {
   const [msgs, setMsgs] = useState([]);
   const [input, setInput] = useState("");
@@ -411,7 +440,7 @@ function ChatTab({ user }) {
     <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 130px)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 14, borderBottom: `2px solid ${T.border}`, marginBottom: 14 }}>
         <div style={{ width: 10, height: 10, borderRadius: "50%", background: T.green, boxShadow: `0 0 8px ${T.green}` }} />
-        <span style={{ color: T.text2, fontSize: 13, fontWeight: 600 }}>Group Chat · 50 members</span>
+        <span style={{ color: T.text2, fontSize: 13, fontWeight: 600 }}>Group Chat</span>
       </div>
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 12 }}>
         {msgs.map(m => {
@@ -437,7 +466,6 @@ function ChatTab({ user }) {
   );
 }
 
-// ─── FORUM TAB ────────────────────────────────────────────────────────────────
 function ForumTab({ user }) {
   const [posts, setPosts] = useState([]);
   const [composing, setComposing] = useState(false);
@@ -485,7 +513,6 @@ function ForumTab({ user }) {
   );
 }
 
-// ─── STUDENTS TAB ─────────────────────────────────────────────────────────────
 function StudentsTab() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -515,7 +542,6 @@ function StudentsTab() {
   );
 }
 
-// ─── HOME TAB ─────────────────────────────────────────────────────────────────
 function HomeTab() {
   const [modules, setModules] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
@@ -526,19 +552,20 @@ function HomeTab() {
   const overall = modules.length ? Math.round(modules.reduce((a, m) => a + (m.progress || 0), 0) / modules.length) : 0;
   return (
     <div>
-      <div style={{ background: `linear-gradient(135deg,${T.purple}20,${T.pink}10)`, border: `2px solid ${T.purple}22`, borderRadius: 22, padding: "28px 32px", marginBottom: 22, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <div style={{ color: T.purple, fontSize: 14, fontWeight: 700, marginBottom: 6 }}>Welcome back! 👋</div>
-          <div style={{ fontWeight: 900, fontSize: 24, color: T.text, marginBottom: 4 }}>LearnFlow Dashboard</div>
-          <div style={{ color: T.text2, fontSize: 14 }}>Your learning journey starts here 🚀</div>
-        </div>
-        <div style={{ textAlign: "center", background: T.bg1, borderRadius: 20, padding: "16px 24px", boxShadow: "0 4px 24px rgba(108,92,231,0.1)" }}>
-          <div style={{ fontSize: 40, fontWeight: 900, color: T.purple }}>{overall}%</div>
-          <div style={{ color: T.text3, fontSize: 12, fontWeight: 600 }}>avg progress</div>
+      <div style={{ background: `linear-gradient(135deg,${T.purple},#5a4fd4)`, borderRadius: 22, padding: "32px", marginBottom: 22, color: "#fff", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: -20, right: -20, width: 120, height: 120, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
+        <div style={{ fontSize: 14, fontWeight: 700, opacity: 0.8, marginBottom: 6 }}>Welcome back! 👋</div>
+        <div style={{ fontWeight: 900, fontSize: 26, marginBottom: 4 }}>LearnFlow</div>
+        <div style={{ opacity: 0.8, fontSize: 14, marginBottom: 20 }}>Your learning journey starts here 🚀</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ flex: 1, background: "rgba(255,255,255,0.2)", borderRadius: 99, height: 10 }}>
+            <div style={{ height: "100%", width: `${overall}%`, background: "#fff", borderRadius: 99, transition: "width 0.5s" }} />
+          </div>
+          <div style={{ fontWeight: 900, fontSize: 22 }}>{overall}%</div>
         </div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24 }}>
-        {[{ label: "Students", value: "50", color: T.purple, emoji: "👥" }, { label: "Active Today", value: "18", color: T.green, emoji: "🟢" }, { label: "Avg Grade", value: "B+", color: T.amber, emoji: "⭐" }].map(s => (
+        {[{ label: "Modules", value: modules.length, color: T.purple, emoji: "📚" }, { label: "Completed", value: modules.filter(m => m.progress === 100).length, color: T.green, emoji: "✅" }, { label: "In Progress", value: modules.filter(m => m.progress > 0 && m.progress < 100).length, color: T.amber, emoji: "🔥" }].map(s => (
           <Card key={s.label} style={{ textAlign: "center" }}>
             <div style={{ fontSize: 24, marginBottom: 8 }}>{s.emoji}</div>
             <div style={{ fontSize: 26, fontWeight: 900, color: s.color }}>{s.value}</div>
@@ -546,16 +573,16 @@ function HomeTab() {
           </Card>
         ))}
       </div>
-      <div style={{ fontWeight: 800, fontSize: 16, color: T.text, marginBottom: 14 }}>📊 Modules</div>
+      <div style={{ fontWeight: 800, fontSize: 16, color: T.text, marginBottom: 14 }}>📊 My Modules</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 12, marginBottom: 24 }}>
         {modules.map(m => (
-          <Card key={m.id} style={{ background: `linear-gradient(135deg,${m.color}10,${T.bg1})`, border: `2px solid ${m.color}22` }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-              <span style={{ fontSize: 20, fontWeight: 800, color: m.color }}>{m.icon}</span>
-              <Chip label={`${m.progress || 0}%`} color={m.color} />
+          <Card key={m.id} style={{ padding: 0, overflow: "hidden", border: `2px solid ${m.color}22` }}>
+            <div style={{ height: 60, background: `linear-gradient(135deg,${m.color},${m.color}88)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{m.icon}</div>
+            <div style={{ padding: "12px 14px" }}>
+              <div style={{ fontWeight: 700, fontSize: 13, color: T.text, marginBottom: 8 }}>{m.title?.split(":")[0]}</div>
+              <Bar val={m.progress} color={m.color} h={5} />
+              <div style={{ color: T.text3, fontSize: 11, marginTop: 6 }}>{m.progress || 0}%</div>
             </div>
-            <div style={{ fontWeight: 700, fontSize: 13, color: T.text, marginBottom: 8 }}>{m.title?.split(":")[0]}</div>
-            <Bar val={m.progress} color={m.color} h={5} />
           </Card>
         ))}
       </div>
@@ -574,22 +601,29 @@ function HomeTab() {
   );
 }
 
-// ─── MAIN DASHBOARD ───────────────────────────────────────────────────────────
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const [tab, setTab] = useState("home");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activeLessonGlobal, setActiveLessonGlobal] = useState(null);
+  const [activeLessonMod, setActiveLessonMod] = useState(null);
   const isInstructor = user?.role === "instructor";
 
   const NAV = [
     { id: "home", icon: "⊞", label: "Dashboard" },
+    { id: "course", icon: "🗂", label: "Course Navigation" },
     { id: "modules", icon: "◈", label: "My Modules" },
     { id: "chat", icon: "💬", label: "Chat" },
     { id: "forum", icon: "◆", label: "Forum" },
     ...(isInstructor ? [{ id: "students", icon: "👥", label: "Students" }] : []),
   ];
 
-  const TITLES = { home: "Dashboard", modules: "Modules", chat: "Group Chat", forum: "Forum", students: "Students" };
+  const TITLES = { home: "Dashboard", course: "Course Navigation", modules: "My Modules", chat: "Group Chat", forum: "Forum", students: "Students" };
+
+  const handleOpenLesson = (lesson, mod) => {
+    setActiveLessonGlobal(lesson);
+    setActiveLessonMod(mod);
+  };
 
   return (
     <>
@@ -601,8 +635,7 @@ export default function Dashboard() {
         @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
       `}</style>
       <div style={{ display: "flex", height: "100vh", background: T.bg }}>
-        {/* SIDEBAR */}
-        <div style={{ width: sidebarOpen ? 220 : 68, background: T.bg1, borderRight: `2px solid ${T.border}`, display: "flex", flexDirection: "column", transition: "width .28s ease", overflow: "hidden", flexShrink: 0, boxShadow: "4px 0 20px rgba(108,92,231,0.06)" }}>
+        <div style={{ width: sidebarOpen ? 230 : 68, background: T.bg1, borderRight: `2px solid ${T.border}`, display: "flex", flexDirection: "column", transition: "width .28s ease", overflow: "hidden", flexShrink: 0, boxShadow: "4px 0 20px rgba(108,92,231,0.06)" }}>
           <div style={{ padding: "20px 14px", borderBottom: `2px solid ${T.border}`, display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 38, height: 38, borderRadius: 12, background: `linear-gradient(135deg,${T.purple},${T.pink})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>🎓</div>
             {sidebarOpen && <span style={{ fontWeight: 900, fontSize: 17, color: T.text, whiteSpace: "nowrap" }}>LearnFlow</span>}
@@ -612,8 +645,8 @@ export default function Dashboard() {
           </div>
           <nav style={{ padding: "12px 10px", flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
             {NAV.map(n => (
-              <button key={n.id} onClick={() => setTab(n.id)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 10px", borderRadius: 14, border: tab === n.id ? `1.5px solid ${T.purple}22` : "1.5px solid transparent", cursor: "pointer", background: tab === n.id ? T.purple + "15" : "transparent", color: tab === n.id ? T.purple : T.text3, fontSize: 14, fontWeight: tab === n.id ? 800 : 600, transition: "all .15s", whiteSpace: "nowrap", overflow: "hidden", textAlign: "left", width: "100%", fontFamily: "'Nunito',sans-serif" }}>
-                <span style={{ fontSize: 18, flexShrink: 0 }}>{n.icon}</span>
+              <button key={n.id} onClick={() => setTab(n.id)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 10px", borderRadius: 14, border: tab === n.id ? `1.5px solid ${T.purple}22` : "1.5px solid transparent", cursor: "pointer", background: tab === n.id ? T.purple + "15" : "transparent", color: tab === n.id ? T.purple : T.text3, fontSize: 13, fontWeight: tab === n.id ? 800 : 600, transition: "all .15s", whiteSpace: "nowrap", overflow: "hidden", textAlign: "left", width: "100%", fontFamily: "'Nunito',sans-serif" }}>
+                <span style={{ fontSize: 17, flexShrink: 0 }}>{n.icon}</span>
                 {sidebarOpen && n.label}
               </button>
             ))}
@@ -631,14 +664,20 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-        {/* MAIN */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <div style={{ padding: "14px 28px", background: T.bg1, borderBottom: `2px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, boxShadow: "0 2px 12px rgba(108,92,231,0.06)" }}>
             <div style={{ fontWeight: 900, fontSize: 20, color: T.text }}>{TITLES[tab]}</div>
             <Chip label={isInstructor ? "👨‍🏫 Instructor" : "🎓 Student"} color={isInstructor ? T.amber : T.blue} />
           </div>
           <div style={{ flex: 1, overflowY: "auto", padding: 28, animation: "fadeUp .25s ease" }} key={tab}>
+            {activeLessonGlobal?.type === "video" && (
+              <VideoModal lesson={activeLessonGlobal} onClose={() => setActiveLessonGlobal(null)} onComplete={() => setActiveLessonGlobal(null)} />
+            )}
+            {activeLessonGlobal?.type === "quiz" && (
+              <QuizModal lesson={activeLessonGlobal} onClose={() => setActiveLessonGlobal(null)} onComplete={() => setActiveLessonGlobal(null)} />
+            )}
             {tab === "home" && <HomeTab />}
+            {tab === "course" && <CourseNavTab isInstructor={isInstructor} onOpenLesson={handleOpenLesson} />}
             {tab === "modules" && <ModulesTab isInstructor={isInstructor} />}
             {tab === "chat" && <ChatTab user={user} />}
             {tab === "forum" && <ForumTab user={user} />}
