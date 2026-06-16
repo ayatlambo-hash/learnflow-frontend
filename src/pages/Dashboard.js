@@ -437,7 +437,7 @@ function ChatTab({ user }) {
     setMsgs(m => [...m, r.data]);
   };
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 130px)", backgroundImage: "url('https://i.pinimg.com/1200x/16/ae/53/16ae539a11dee1dc923c47f4dace31ad.jpg')", backgroundSize: "cover", backgroundPosition: "center", borderRadius: 16}}>
+    <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 130px)", backgroundImage: "url('https://i.pinimg.com/1200x/0d/3c/80/0d3c807a501621a23da959e06494ecd4.jpg')", backgroundSize: "cover", backgroundPosition: "center", borderRadius: 16}}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 14, borderBottom: `2px solid ${T.border}`, marginBottom: 14 }}>
         <div style={{ width: 10, height: 10, borderRadius: "50%", background: T.green, boxShadow: `0 0 8px ${T.green}` }} />
         <span style={{ color: T.text2, fontSize: 13, fontWeight: 600 }}>Group Chat</span>
