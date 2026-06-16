@@ -538,9 +538,6 @@ function StudentsTab() {
           {s.grade && <Chip label={s.grade} color={s.grade?.startsWith("A") ? T.green : s.grade?.startsWith("B") ? T.blue : T.amber} />}
         </Card>
       ))}
-      <div style={{ marginTop: 24, borderRadius: 16, overflow: "hidden" }}>
-  <img src="https://i.pinimg.com/1200x/52/f6/55/52f655d1ffc9d68776b690165dbf2355.jpg" alt="motivation" style={{ width: "100%", borderRadius: 16, display: "block" }} />
-</div>
     </div>
   );
 }
@@ -654,6 +651,9 @@ export default function Dashboard() {
               </button>
             ))}
           </nav>
+          <div style={{ padding: "0 10px 10px" }}>
+  <img src="https://i.pinimg.com/1200x/52/f6/55/52f655d1ffc9d68776b690165dbf2355.jpg" alt="motivation" style={{ width: "100%", borderRadius: 12, display: "block" }} />
+</div>
           <div style={{ padding: "14px 10px", borderTop: `2px solid ${T.border}`, display: "flex", alignItems: "center", gap: 10, overflow: "hidden" }}>
             <Av name={user?.name || "User"} color={user?.avatar_color || T.purple} size={34} />
             {sidebarOpen && (
