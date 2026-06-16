@@ -552,7 +552,7 @@ function HomeTab() {
   const overall = modules.length ? Math.round(modules.reduce((a, m) => a + (m.progress || 0), 0) / modules.length) : 0;
   return (
     <div>
-      <div style={{ background: `linear-gradient(135deg,${T.purple},#5a4fd4)`, borderRadius: 22, padding: "32px", marginBottom: 22, color: "#fff", position: "relative", overflow: "hidden" }}>
+      <div style={{ background: `url('https://i.pinimg.com/1200x/87/cb/c5/87cbc515b5de62c7bd3d633a5ec54194.jpg') center/cover`, borderRadius: 22, padding: "32px", marginBottom: 22, color: "#fff", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: -20, right: -20, width: 120, height: 120, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
         <div style={{ fontSize: 14, fontWeight: 700, opacity: 0.8, marginBottom: 6 }}>Welcome back! 👋</div>
         <div style={{ fontWeight: 900, fontSize: 26, marginBottom: 4 }}>LearnFlow</div>
