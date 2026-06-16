@@ -401,7 +401,7 @@ function ModulesTab({ isInstructor }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 16 }}>
         {modules.map(m => (
           <Card key={m.id} onClick={() => openModule(m)} style={{ padding: 0, overflow: "hidden", border: `2px solid ${m.color}22` }}>
-            <div style={{ height: 80, background: `linear-gradient(135deg,${m.color},${m.color}88)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>
+            <div style={{ height: 120, backgroundImage: `url(${m.order_index === 1 ? 'https://i.pinimg.com/1200x/85/4a/19/854a19e2c3445f1a856a0557556cd1f5.jpg' : m.order_index === 2 ? 'https://i.pinimg.com/736x/a2/90/71/a2907103178845281c58c81e7fa515db.jpg' : m.order_index === 3 ? 'https://i.pinimg.com/736x/3f/25/b5/3f25b5ad3f15770ddaf448157e051983.jpg' : 'https://i.pinimg.com/1200x/a9/5d/95/a95d95d9225c81a942235c53e61e07a0.jpg'})`, backgroundSize: "cover", backgroundPosition: "center", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>
               {m.icon}
             </div>
             <div style={{ padding: "16px 18px" }}>
