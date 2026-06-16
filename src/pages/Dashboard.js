@@ -554,14 +554,14 @@ function HomeTab() {
     <div>
       <div style={{ background: `url('https://i.pinimg.com/1200x/87/cb/c5/87cbc515b5de62c7bd3d633a5ec54194.jpg') center/cover`, borderRadius: 22, padding: "32px", marginBottom: 22, color: "#fff", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: -20, right: -20, width: 120, height: 120, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
-        <div style={{ fontSize: 14, fontWeight: 700, opacity: 0.8, marginBottom: 6 }}>Welcome back! 👋</div>
-        <div style={{ fontWeight: 900, fontSize: 26, marginBottom: 4 }}>LearnFlow</div>
-        <div style={{ opacity: 0.8, fontSize: 14, marginBottom: 20 }}>Your learning journey starts here 🚀</div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#1a1f3a", marginBottom: 6 }}>Welcome back! 👋</div>
+        <div style={{ fontWeight: 900, fontSize: 26, color: "#1a1f3a", marginBottom: 4 }}>LearnFlow</div>
+        <div style={{ fontSize: 14, color: "#1a1f3a", marginBottom: 20 }}>Your learning journey starts here 🚀</div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ flex: 1, background: "rgba(255,255,255,0.2)", borderRadius: 99, height: 10 }}>
             <div style={{ height: "100%", width: `${overall}%`, background: "#fff", borderRadius: 99, transition: "width 0.5s" }} />
           </div>
-          <div style={{ fontWeight: 900, fontSize: 22 }}>{overall}%</div>
+          <div style={{ fontWeight: 900, fontSize: 22, color: "#1a1f3a" }}>{overall}%</div>
         </div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24 }}>
