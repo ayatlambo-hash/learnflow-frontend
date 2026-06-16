@@ -538,6 +538,9 @@ function StudentsTab() {
           {s.grade && <Chip label={s.grade} color={s.grade?.startsWith("A") ? T.green : s.grade?.startsWith("B") ? T.blue : T.amber} />}
         </Card>
       ))}
+      <div style={{ marginTop: 24, borderRadius: 16, overflow: "hidden" }}>
+  <img src="https://i.pinimg.com/1200x/52/f6/55/52f655d1ffc9d68776b690165dbf2355.jpg" alt="motivation" style={{ width: "100%", borderRadius: 16, display: "block" }} />
+</div>
     </div>
   );
 }
