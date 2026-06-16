@@ -216,7 +216,7 @@ function CourseNavTab({ isInstructor, onOpenLesson }) {
 
   return (
     <div>
-      <div style={{ fontWeight: 800, fontSize: 18, color: T.text, marginBottom: 20 }}>📚 Course Structure</div>
+      <div style={{ fontWeight: 800, fontSize: 18, color: T.text, marginBottom: 20, backgroundImage: "url('https://i.pinimg.com/1200x/d4/19/6b/d4196b7fa6226f1aad81a757dd09faae.jpg')", backgroundSize: "cover", backgroundPosition: "center", borderRadius: 16, padding: "40px 24px", color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>📚 Course Structure</div>
       {modules.map((mod, mi) => (
         <div key={mod.id} style={{ marginBottom: 8 }}>
           <div onClick={() => toggleModule(mod)}
