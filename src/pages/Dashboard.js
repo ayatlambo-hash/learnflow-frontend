@@ -200,7 +200,7 @@ function CourseNavTab({ isInstructor, onOpenLesson }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/modules").then(r => { setModules(r.data); setLoading(false); });
+    api.get("/modules/coursenav").then(r => { setModules(r.data); setLoading(false); });
   }, []);
 
   const toggleModule = async (mod) => {
