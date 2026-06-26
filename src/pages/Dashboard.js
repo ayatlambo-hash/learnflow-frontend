@@ -1794,113 +1794,98 @@ function HomeTab({ isInstructor }) {
       {/* English course illustrations — visible in free space at bottom */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 24 }}>
 
-        {/* Card 1 — Skills illustration */}
-        <div style={{ borderRadius: 16, overflow: "hidden", background: "linear-gradient(135deg, #0f1f3d 0%, #1a3a6e 50%, #2d1b69 100%)", padding: "20px", display: "flex", gap: 16, alignItems: "center", boxShadow: "0 4px 20px rgba(37,99,235,0.18)" }}>
+        {/* Card 1 — Communication Skills */}
+        <div style={{ borderRadius: 16, overflow: "hidden", background: "linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #4f46e5 100%)", padding: "20px", display: "flex", gap: 16, alignItems: "center", boxShadow: "0 4px 20px rgba(37,99,235,0.22)" }}>
+          {/* Card 1 illustration — headphones + speech bubbles */}
           <svg width="130" height="130" viewBox="0 0 260 260" fill="none" style={{ flexShrink: 0 }}>
-            {/* Open book */}
-            <rect x="20" y="100" width="220" height="145" rx="8" fill="#2563eb"/>
-            <rect x="20" y="100" width="108" height="145" rx="8" fill="#1d3a8a"/>
-            <line x1="130" y1="100" x2="130" y2="245" stroke="#fff" strokeWidth="3" opacity="0.4"/>
-            <text x="74" y="178" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold" fontFamily="Georgia,serif">I ♥</text>
-            <text x="74" y="196" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold" fontFamily="Georgia,serif">English</text>
-            <text x="185" y="178" textAnchor="middle" fill="white" fontSize="11" fontFamily="Georgia,serif">READING</text>
             {/* Headphones */}
-            <path d="M85 72 Q85 40 130 40 Q175 40 175 72" stroke="#e53e3e" strokeWidth="8" fill="none" strokeLinecap="round"/>
-            <rect x="72" y="70" width="18" height="28" rx="8" fill="#e53e3e"/>
-            <rect x="170" y="70" width="18" height="28" rx="8" fill="#e53e3e"/>
-            {/* Listening bubble */}
-            <ellipse cx="130" cy="105" rx="48" ry="16" fill="#f6ad2b"/>
-            <text x="130" y="110" textAnchor="middle" fill="#1a1f3a" fontSize="11" fontWeight="bold" fontFamily="'Nunito',sans-serif">Listening</text>
-            {/* UK flag mini */}
-            <rect x="152" y="106" width="30" height="18" rx="2" fill="#012169"/>
-            <line x1="152" y1="106" x2="182" y2="124" stroke="white" strokeWidth="2.5"/>
-            <line x1="182" y1="106" x2="152" y2="124" stroke="white" strokeWidth="2.5"/>
-            <line x1="167" y1="106" x2="167" y2="124" stroke="white" strokeWidth="3.5"/>
-            <line x1="152" y1="115" x2="182" y2="115" stroke="white" strokeWidth="3.5"/>
-            <line x1="152" y1="106" x2="182" y2="124" stroke="#c8102e" strokeWidth="1.5"/>
-            <line x1="182" y1="106" x2="152" y2="124" stroke="#c8102e" strokeWidth="1.5"/>
-            <line x1="167" y1="106" x2="167" y2="124" stroke="#c8102e" strokeWidth="2"/>
-            <line x1="152" y1="115" x2="182" y2="115" stroke="#c8102e" strokeWidth="2"/>
+            <path d="M60 130 Q60 60 130 60 Q200 60 200 130" stroke="rgba(255,255,255,0.5)" strokeWidth="10" fill="none" strokeLinecap="round"/>
+            <rect x="44" y="126" width="30" height="46" rx="14" fill="rgba(255,255,255,0.25)"/>
+            <rect x="50" y="132" width="18" height="34" rx="9" fill="white"/>
+            <rect x="186" y="126" width="30" height="46" rx="14" fill="rgba(255,255,255,0.25)"/>
+            <rect x="192" y="132" width="18" height="34" rx="9" fill="white"/>
             {/* Speaking bubble */}
-            <ellipse cx="52" cy="82" rx="38" ry="18" fill="#e53e3e" opacity="0.9"/>
-            <text x="52" y="87" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold" fontFamily="'Nunito',sans-serif">Speaking</text>
-            <polygon points="58,99 72,110 50,106" fill="#e53e3e" opacity="0.9"/>
-            {/* Writing bubble */}
-            <ellipse cx="210" cy="88" rx="38" ry="18" fill="#f6ad2b" opacity="0.9"/>
-            <text x="210" y="93" textAnchor="middle" fill="#1a1f3a" fontSize="10" fontWeight="bold" fontFamily="'Nunito',sans-serif">Writing</text>
-            {/* Grammar pills */}
-            <ellipse cx="40" cy="30" rx="18" ry="11" fill="white" opacity="0.25"/>
-            <text x="40" y="35" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">Am</text>
-            <ellipse cx="80" cy="22" rx="13" ry="10" fill="white" opacity="0.18"/>
-            <text x="80" y="27" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">Is</text>
-            <ellipse cx="120" cy="28" rx="20" ry="11" fill="#e53e3e" opacity="0.75"/>
-            <text x="120" y="33" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">Are</text>
-            {/* Grad cap */}
-            <polygon points="200,18 168,34 200,46 232,34" fill="#1d3a8a"/>
-            <rect x="192" y="16" width="16" height="5" rx="2" fill="#0f1f3d"/>
-            <line x1="232" y1="34" x2="236" y2="52" stroke="#f6ad2b" strokeWidth="3"/>
-            <circle cx="236" cy="55" r="5" fill="#f6ad2b"/>
+            <rect x="30" y="28" width="90" height="38" rx="12" fill="rgba(255,255,255,0.18)"/>
+            <text x="75" y="51" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold" fontFamily="'Nunito',sans-serif">Speaking</text>
+            <polygon points="60,65 80,65 65,78" fill="rgba(255,255,255,0.18)"/>
+            {/* Listening bubble */}
+            <rect x="138" y="28" width="90" height="38" rx="12" fill="rgba(255,255,255,0.18)"/>
+            <text x="183" y="51" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold" fontFamily="'Nunito',sans-serif">Listening</text>
+            <polygon points="168,65 188,65 175,78" fill="rgba(255,255,255,0.18)"/>
+            {/* Grammar pills row */}
+            <rect x="30" y="195" width="44" height="26" rx="13" fill="rgba(255,255,255,0.22)"/>
+            <text x="52" y="213" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">Am</text>
+            <rect x="82" y="195" width="34" height="26" rx="13" fill="rgba(255,255,255,0.22)"/>
+            <text x="99" y="213" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">Is</text>
+            <rect x="124" y="195" width="40" height="26" rx="13" fill="rgba(255,255,255,0.22)"/>
+            <text x="144" y="213" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">Are</text>
+            <rect x="172" y="195" width="40" height="26" rx="13" fill="rgba(255,255,255,0.22)"/>
+            <text x="192" y="213" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">Did</text>
+            {/* UK flag */}
+            <rect x="96" y="235" width="68" height="42" rx="4" fill="rgba(255,255,255,0.15)"/>
+            <rect x="96" y="235" width="68" height="42" rx="4" fill="#012169" opacity="0.7"/>
+            <line x1="96" y1="235" x2="164" y2="277" stroke="white" strokeWidth="7" opacity="0.6"/>
+            <line x1="164" y1="235" x2="96" y2="277" stroke="white" strokeWidth="7" opacity="0.6"/>
+            <line x1="130" y1="235" x2="130" y2="277" stroke="white" strokeWidth="10" opacity="0.7"/>
+            <line x1="96" y1="256" x2="164" y2="256" stroke="white" strokeWidth="10" opacity="0.7"/>
+            <line x1="96" y1="235" x2="164" y2="277" stroke="#c8102e" strokeWidth="4" opacity="0.8"/>
+            <line x1="164" y1="235" x2="96" y2="277" stroke="#c8102e" strokeWidth="4" opacity="0.8"/>
+            <line x1="130" y1="235" x2="130" y2="277" stroke="#c8102e" strokeWidth="6" opacity="0.8"/>
+            <line x1="96" y1="256" x2="164" y2="256" stroke="#c8102e" strokeWidth="6" opacity="0.8"/>
             {/* Stars */}
-            <text x="22" y="20" fontSize="14" fill="#f6ad2b">✦</text>
-            <text x="230" y="72" fontSize="12" fill="#f6ad2b">✦</text>
-            <text x="145" y="16" fontSize="10" fill="white" opacity="0.6">✦</text>
+            <text x="14" y="20" fontSize="16" fill="rgba(255,255,255,0.5)">✦</text>
+            <text x="228" y="24" fontSize="13" fill="rgba(255,255,255,0.4)">✦</text>
+            <text x="240" y="200" fontSize="11" fill="rgba(255,255,255,0.35)">✦</text>
           </svg>
           <div>
-            <div style={{ color: "#f6ad2b", fontWeight: 800, fontSize: 13, fontFamily: "'Nunito',sans-serif", marginBottom: 8 }}>🇬🇧 English Skills</div>
-            {["📖 Grammar", "🎧 Listening", "✍️ Writing", "🗣️ Speaking"].map(s => (
+            <div style={{ color: "white", fontWeight: 800, fontSize: 14, fontFamily: "'Nunito',sans-serif", marginBottom: 4 }}>🗣️ Communication Skills</div>
+            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, marginBottom: 10 }}>PC 101 · Professional English</div>
+            {["🎧 Listening & Speaking", "📖 Grammar in context", "✍️ Academic Writing", "🌍 Intercultural Skills"].map(s => (
               <div key={s} style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, marginBottom: 5, display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f6ad2b", display: "inline-block", flexShrink: 0 }} />
+                <span style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(255,255,255,0.6)", display: "inline-block", flexShrink: 0 }} />
                 {s}
               </div>
             ))}
           </div>
         </div>
 
-        {/* Card 2 — Book + headphones illustration */}
-        <div style={{ borderRadius: 16, overflow: "hidden", background: "linear-gradient(135deg, #fef9f0 0%, #fff7ed 100%)", border: "1.5px solid #fde68a", padding: "20px", display: "flex", gap: 16, alignItems: "center", boxShadow: "0 4px 20px rgba(246,173,43,0.12)" }}>
+        {/* Card 2 — Course Materials */}
+        <div style={{ borderRadius: 16, overflow: "hidden", background: "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #6d28d9 100%)", padding: "20px", display: "flex", gap: 16, alignItems: "center", boxShadow: "0 4px 20px rgba(109,40,217,0.22)" }}>
+          {/* Card 2 illustration — open book + graduation cap */}
           <svg width="130" height="130" viewBox="0 0 260 260" fill="none" style={{ flexShrink: 0 }}>
-            {/* Stacked book behind */}
-            <rect x="15" y="50" width="90" height="130" rx="6" fill="#1d3a8a" opacity="0.9"/>
-            <rect x="19" y="54" width="82" height="122" rx="4" fill="#2563eb" opacity="0.5"/>
-            <text x="60" y="108" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold" fontFamily="Georgia,serif">ENGLISH</text>
-            <text x="60" y="122" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold" fontFamily="Georgia,serif">COURSE</text>
             {/* Open book */}
-            <rect x="55" y="130" width="190" height="110" rx="8" fill="#f0f4ff"/>
-            <rect x="55" y="130" width="93" height="110" rx="8" fill="#e8eeff"/>
-            <line x1="149" y1="130" x2="149" y2="240" stroke="#c8d2f5" strokeWidth="2"/>
-            <line x1="67" y1="155" x2="137" y2="155" stroke="#c8d2f5" strokeWidth="1.5"/>
-            <line x1="67" y1="168" x2="137" y2="168" stroke="#c8d2f5" strokeWidth="1.5"/>
-            <line x1="67" y1="181" x2="137" y2="181" stroke="#c8d2f5" strokeWidth="1.5"/>
-            <line x1="67" y1="194" x2="117" y2="194" stroke="#c8d2f5" strokeWidth="1.5"/>
-            {/* UK map shape on right page */}
-            <ellipse cx="196" cy="188" rx="30" ry="36" fill="#f6ad2b" opacity="0.55"/>
-            <text x="196" y="193" textAnchor="middle" fill="#92400e" fontSize="9" fontWeight="bold">UK</text>
-            {/* Headphones over book */}
-            <path d="M128 240 Q128 258 155 262 Q182 258 182 240" stroke="#e53e3e" strokeWidth="7" fill="none" strokeLinecap="round"/>
-            <rect x="118" y="238" width="14" height="22" rx="7" fill="#e53e3e"/>
-            <rect x="182" y="238" width="14" height="22" rx="7" fill="#e53e3e"/>
-            {/* Notebook */}
-            <rect x="8" y="185" width="65" height="70" rx="4" fill="white" opacity="0.9"/>
-            <rect x="8" y="185" width="6" height="70" rx="2" fill="#2563eb" opacity="0.4"/>
-            <line x1="20" y1="200" x2="66" y2="200" stroke="#cbd5e1" strokeWidth="1.5"/>
-            <line x1="20" y1="212" x2="66" y2="212" stroke="#cbd5e1" strokeWidth="1.5"/>
-            <line x1="20" y1="224" x2="66" y2="224" stroke="#cbd5e1" strokeWidth="1.5"/>
-            <line x1="20" y1="236" x2="52" y2="236" stroke="#cbd5e1" strokeWidth="1.5"/>
-            {/* Pen */}
-            <rect x="3" y="242" width="6" height="46" rx="3" fill="#2563eb" transform="rotate(-18,6,265)" opacity="0.8"/>
-            <polygon points="3,285 9,285 6,295" fill="#e8eeff" transform="rotate(-18,6,285)" opacity="0.8"/>
-            {/* Flowers */}
-            <text x="195" y="60" fontSize="20" fill="#f6ad2b" opacity="0.7">✿</text>
-            <text x="30" y="175" fontSize="14" fill="#86efac" opacity="0.8">✿</text>
-            <text x="228" y="140" fontSize="13" fill="#86efac" opacity="0.7">🌿</text>
-            <text x="110" y="48" fontSize="16" fill="#f6ad2b" opacity="0.65">✦</text>
-            <text x="48" y="65" fontSize="12" fill="#f6ad2b" opacity="0.55">✦</text>
+            <rect x="15" y="90" width="230" height="150" rx="10" fill="rgba(255,255,255,0.15)"/>
+            <rect x="15" y="90" width="113" height="150" rx="10" fill="rgba(255,255,255,0.1)"/>
+            <line x1="130" y1="90" x2="130" y2="240" stroke="rgba(255,255,255,0.3)" strokeWidth="3"/>
+            {/* Left page lines */}
+            <line x1="30" y1="118" x2="120" y2="118" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
+            <line x1="30" y1="132" x2="120" y2="132" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
+            <line x1="30" y1="146" x2="120" y2="146" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
+            <line x1="30" y1="160" x2="100" y2="160" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
+            <line x1="30" y1="174" x2="110" y2="174" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
+            <line x1="30" y1="188" x2="90" y2="188" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
+            {/* Right page text */}
+            <text x="185" y="140" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="11" fontWeight="bold" fontFamily="Georgia,serif">ENGLISH</text>
+            <text x="185" y="156" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="11" fontFamily="Georgia,serif">COURSE</text>
+            <text x="185" y="175" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="10" fontFamily="Georgia,serif">PC 101</text>
+            {/* Graduation cap */}
+            <polygon points="130,20 80,44 130,62 180,44" fill="rgba(255,255,255,0.85)"/>
+            <rect x="122" y="18" width="16" height="8" rx="3" fill="rgba(255,255,255,0.5)"/>
+            <line x1="180" y1="44" x2="185" y2="68" stroke="rgba(255,255,255,0.7)" strokeWidth="4"/>
+            <circle cx="185" cy="72" r="7" fill="rgba(255,255,255,0.7)"/>
+            {/* Spine */}
+            <rect x="15" y="90" width="8" height="150" rx="4" fill="rgba(255,255,255,0.25)"/>
+            {/* Stars */}
+            <text x="200" y="25" fontSize="15" fill="rgba(255,255,255,0.45)">✦</text>
+            <text x="18" y="72" fontSize="13" fill="rgba(255,255,255,0.35)">✦</text>
+            <text x="220" y="82" fontSize="11" fill="rgba(255,255,255,0.3)">✦</text>
           </svg>
           <div>
-            <div style={{ color: "#92400e", fontWeight: 800, fontSize: 13, fontFamily: "'Nunito',sans-serif", marginBottom: 8 }}>📚 Course Materials</div>
-            {["Do you speak English?", "Read · Write · Listen", "British English focus", "Professional context"].map(s => (
-              <div key={s} style={{ color: "#78350f", fontSize: 12, marginBottom: 5, display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f6ad2b", display: "inline-block", flexShrink: 0 }} />
+            <div style={{ color: "white", fontWeight: 800, fontSize: 14, fontFamily: "'Nunito',sans-serif", marginBottom: 4 }}>📚 Course Materials</div>
+            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, marginBottom: 10 }}>Professional Communication</div>
+            {["📋 4 Core Modules", "🎬 Video Scenarios", "📝 Quizzes & Assignments", "🏆 Final Projects"].map(s => (
+              <div key={s} style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, marginBottom: 5, display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(255,255,255,0.6)", display: "inline-block", flexShrink: 0 }} />
                 {s}
               </div>
             ))}
