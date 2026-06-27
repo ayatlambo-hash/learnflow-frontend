@@ -498,6 +498,79 @@ function CourseNavTab({ isInstructor }) {
     ["#0e7490", "#0891b2"], ["#15803d", "#0891b2"]
   ];
 
+  const getModuleBg = (title) => {
+    const t = (title || "").toLowerCase();
+    if (t.includes("grading") || t.includes("logistics")) return (
+      <svg width="100%" height="100%" viewBox="0 0 400 80" fill="none" style={{ position: "absolute", right: 0, top: 0, opacity: 0.08, pointerEvents: "none" }}>
+        <text x="280" y="35" fontSize="28" fontWeight="900" fill="currentColor" fontFamily="monospace">A+ B A-</text>
+        <text x="260" y="65" fontSize="22" fontWeight="800" fill="currentColor" fontFamily="monospace">95 88 72 100</text>
+        <rect x="340" y="10" width="40" height="55" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+        <line x1="350" y1="25" x2="370" y2="25" stroke="currentColor" strokeWidth="1.5"/>
+        <line x1="350" y1="35" x2="370" y2="35" stroke="currentColor" strokeWidth="1.5"/>
+        <line x1="350" y1="45" x2="365" y2="45" stroke="currentColor" strokeWidth="1.5"/>
+      </svg>
+    );
+    if (t.includes("online") || t.includes("navigation")) return (
+      <svg width="100%" height="100%" viewBox="0 0 400 80" fill="none" style={{ position: "absolute", right: 0, top: 0, opacity: 0.08, pointerEvents: "none" }}>
+        <rect x="260" y="8" width="60" height="45" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+        <rect x="268" y="56" width="44" height="4" rx="2" fill="currentColor"/>
+        <circle cx="290" cy="30" r="6" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+        <path d="M296 36 L304 44" stroke="currentColor" strokeWidth="2"/>
+        <rect x="340" y="12" width="44" height="52" rx="6" stroke="currentColor" strokeWidth="2" fill="none"/>
+        <rect x="354" y="56" width="16" height="3" rx="1.5" fill="currentColor"/>
+        <line x1="350" y1="24" x2="374" y2="24" stroke="currentColor" strokeWidth="1"/>
+        <line x1="350" y1="32" x2="374" y2="32" stroke="currentColor" strokeWidth="1"/>
+        <line x1="350" y1="40" x2="368" y2="40" stroke="currentColor" strokeWidth="1"/>
+      </svg>
+    );
+    if (t.includes("needs") || t.includes("analysis") || t.includes("test")) return (
+      <svg width="100%" height="100%" viewBox="0 0 400 80" fill="none" style={{ position: "absolute", right: 0, top: 0, opacity: 0.08, pointerEvents: "none" }}>
+        <rect x="270" y="8" width="50" height="62" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+        <line x1="280" y1="22" x2="310" y2="22" stroke="currentColor" strokeWidth="1.5"/>
+        <line x1="280" y1="32" x2="310" y2="32" stroke="currentColor" strokeWidth="1.5"/>
+        <line x1="280" y1="42" x2="300" y2="42" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M280 52 L288 60 L305 43" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+        <circle cx="355" cy="40" r="22" stroke="currentColor" strokeWidth="2" fill="none"/>
+        <text x="355" y="46" textAnchor="middle" fontSize="16" fontWeight="900" fill="currentColor">?</text>
+      </svg>
+    );
+    if (t.includes("introductory") || t.includes("video")) return (
+      <svg width="100%" height="100%" viewBox="0 0 400 80" fill="none" style={{ position: "absolute", right: 0, top: 0, opacity: 0.08, pointerEvents: "none" }}>
+        <rect x="265" y="10" width="72" height="50" rx="6" stroke="currentColor" strokeWidth="2" fill="none"/>
+        <polygon points="292,26 292,48 312,37" fill="currentColor"/>
+        <circle cx="365" cy="35" r="20" stroke="currentColor" strokeWidth="2" fill="none"/>
+        <path d="M355 35 Q365 20 375 35 Q365 50 355 35" fill="currentColor" opacity="0.6"/>
+        <line x1="365" y1="55" x2="365" y2="65" stroke="currentColor" strokeWidth="2"/>
+        <line x1="358" y1="62" x2="372" y2="62" stroke="currentColor" strokeWidth="2"/>
+      </svg>
+    );
+    if (t.includes("syllabus")) return (
+      <svg width="100%" height="100%" viewBox="0 0 400 80" fill="none" style={{ position: "absolute", right: 0, top: 0, opacity: 0.08, pointerEvents: "none" }}>
+        <rect x="265" y="6" width="48" height="66" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+        <line x1="274" y1="18" x2="304" y2="18" stroke="currentColor" strokeWidth="1.5"/>
+        <line x1="274" y1="28" x2="304" y2="28" stroke="currentColor" strokeWidth="1.5"/>
+        <line x1="274" y1="38" x2="298" y2="38" stroke="currentColor" strokeWidth="1.5"/>
+        <line x1="274" y1="48" x2="304" y2="48" stroke="currentColor" strokeWidth="1.5"/>
+        <line x1="274" y1="58" x2="290" y2="58" stroke="currentColor" strokeWidth="1.5"/>
+        <rect x="330" y="10" width="48" height="58" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+        <rect x="330" y="10" width="48" height="14" rx="4" fill="currentColor" opacity="0.3"/>
+        <line x1="338" y1="34" x2="370" y2="34" stroke="currentColor" strokeWidth="1"/>
+        <line x1="338" y1="42" x2="370" y2="42" stroke="currentColor" strokeWidth="1"/>
+        <line x1="338" y1="50" x2="360" y2="50" stroke="currentColor" strokeWidth="1"/>
+      </svg>
+    );
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 400 80" fill="none" style={{ position: "absolute", right: 0, top: 0, opacity: 0.08, pointerEvents: "none" }}>
+        <rect x="290" y="10" width="55" height="55" rx="6" stroke="currentColor" strokeWidth="2" fill="none"/>
+        <line x1="300" y1="25" x2="335" y2="25" stroke="currentColor" strokeWidth="1.5"/>
+        <line x1="300" y1="35" x2="335" y2="35" stroke="currentColor" strokeWidth="1.5"/>
+        <line x1="300" y1="45" x2="325" y2="45" stroke="currentColor" strokeWidth="1.5"/>
+        <circle cx="365" cy="38" r="15" stroke="currentColor" strokeWidth="2" fill="none"/>
+        <text x="365" y="43" textAnchor="middle" fontSize="14" fontWeight="800" fill="currentColor">📖</text>
+      </svg>
+    );
+  };
+
   if (loading) return <div style={{ color: T.text3, padding: 20 }}>Loading...</div>;
 
   return (
@@ -529,9 +602,10 @@ function CourseNavTab({ isInstructor }) {
           <div key={mod.id} style={{ background: T.bg1, border: `1.5px solid ${T.border}`, borderRadius: 14, marginBottom: 16, overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", animation: `fadeUp .3s ease ${idx * 0.07}s both` }}>
 
             {/* Module header row */}
-            <div onClick={() => toggleMod(mod)} style={{ display: "flex", alignItems: "center", gap: 0, cursor: "pointer", userSelect: "none" }}>
+            <div onClick={() => toggleMod(mod)} style={{ display: "flex", alignItems: "center", gap: 0, cursor: "pointer", userSelect: "none", position: "relative", overflow: "hidden" }}>
+              {getModuleBg(mod.title)}
               <div style={{ width: 6, alignSelf: "stretch", background: `linear-gradient(180deg, ${c1}, ${c2})`, flexShrink: 0 }} />
-              <div style={{ padding: "18px 20px", flex: 1, display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ padding: "18px 20px", flex: 1, display: "flex", alignItems: "center", gap: 14, position: "relative", zIndex: 1 }}>
                 <div style={{ width: 44, height: 44, borderRadius: 10, background: `linear-gradient(135deg, ${c1}, ${c2})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0, boxShadow: `0 4px 12px ${c1}44` }}>📋</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 800, fontSize: 14, color: T.text, textTransform: "uppercase", letterSpacing: "0.04em", fontFamily: "'Nunito',sans-serif" }}>{mod.title}</div>
