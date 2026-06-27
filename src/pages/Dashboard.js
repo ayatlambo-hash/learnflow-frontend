@@ -2,13 +2,23 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/client";
 
-const T = {
+const LIGHT = {
   bg: "#f5f7fa", bg1: "#ffffff", bg2: "#f8fafc", bg3: "#eef2f7",
   border: "#e2e8f0", border2: "#cbd5e1",
   text: "#1e293b", text2: "#475569", text3: "#94a3b8",
   primary: "#2563eb", primaryL: "#3b82f6",
   green: "#16a34a", amber: "#d97706", teal: "#0891b2", red: "#dc2626",
 };
+
+const DARK = {
+  bg: "#0f1729", bg1: "#1a2332", bg2: "#1e2a3a", bg3: "#253447",
+  border: "#2d3f54", border2: "#3b5068",
+  text: "#e2e8f0", text2: "#94a3b8", text3: "#64748b",
+  primary: "#3b82f6", primaryL: "#60a5fa",
+  green: "#22c55e", amber: "#f59e0b", teal: "#06b6d4", red: "#ef4444",
+};
+
+let T = LIGHT;
 
 const DEMO_STUDENTS = [
   { id: 1, name: "Aisha N.", av: "AN", col: "#2563eb", prog: 78, grade: "A", active: "2h ago" },
@@ -2176,6 +2186,9 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const [tab, setTab] = useState("home");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("lf_dark") === "1");
+  T = darkMode ? DARK : LIGHT;
+  const toggleDark = () => { setDarkMode(d => { const nv = !d; localStorage.setItem("lf_dark", nv ? "1" : "0"); return nv; }); };
   const isInstructor = user?.role === "instructor";
 
   const NAV = [
@@ -2198,9 +2211,9 @@ export default function Dashboard() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Nunito:wght@700;800;900&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
-        html,body { background: #f0f4ff; font-family: 'Inter', sans-serif; }
-        input::placeholder, textarea::placeholder { color: #94a3b8; }
+        * { box-sizing: border-box; margin: 0; padding: 0; scrollbar-width: thin; scrollbar-color: ${T.border2} transparent; }
+        html,body { background: ${T.bg}; font-family: 'Inter', sans-serif; transition: background 0.3s ease; }
+        input::placeholder, textarea::placeholder { color: ${T.text3}; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         @keyframes slideRight { from { opacity:0; transform:translateX(-16px); } to { opacity:1; transform:translateX(0); } }
@@ -2213,7 +2226,7 @@ export default function Dashboard() {
         @keyframes countUp { from{opacity:0;transform:scale(0.5);} to{opacity:1;transform:scale(1);} }
         @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
         @keyframes progressFill { from{width:0%} to{width:var(--target-width)} }
-        .nav-btn:hover { background: #eff6ff !important; color: #2563eb !important; transform: translateX(3px); }
+        .nav-btn:hover { background: ${darkMode ? "#253447" : "#eff6ff"} !important; color: ${T.primary} !important; transform: translateX(3px); }
         .stat-card:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 32px rgba(37,99,235,0.15) !important; }
         .module-card:hover { transform: translateY(-3px) !important; box-shadow: 0 8px 24px rgba(37,99,235,0.12) !important; }
       `}</style>
@@ -2229,7 +2242,7 @@ export default function Dashboard() {
           </div>
           <nav style={{ padding: "10px 8px", flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
             {NAV.map((n, i) => (
-              <button key={n.id} onClick={() => setTab(n.id)} className="nav-btn" style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 8, border: "none", cursor: "pointer", background: tab === n.id ? "linear-gradient(135deg, #eff6ff, #e0e7ff)" : "transparent", color: tab === n.id ? T.primary : T.text3, fontSize: 13, fontWeight: tab === n.id ? 700 : 500, transition: "all .2s", whiteSpace: "nowrap", overflow: "hidden", textAlign: "left", width: "100%", fontFamily: "'Inter',sans-serif", animation: `slideRight .3s ease ${i * 0.05}s both`, borderLeft: tab === n.id ? `3px solid ${T.primary}` : "3px solid transparent" }}>
+              <button key={n.id} onClick={() => setTab(n.id)} className="nav-btn" style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 8, border: "none", cursor: "pointer", background: tab === n.id ? (darkMode ? "linear-gradient(135deg, #1e3a5f, #253447)" : "linear-gradient(135deg, #eff6ff, #e0e7ff)") : "transparent", color: tab === n.id ? T.primary : T.text3, fontSize: 13, fontWeight: tab === n.id ? 700 : 500, transition: "all .2s", whiteSpace: "nowrap", overflow: "hidden", textAlign: "left", width: "100%", fontFamily: "'Inter',sans-serif", animation: `slideRight .3s ease ${i * 0.05}s both`, borderLeft: tab === n.id ? `3px solid ${T.primary}` : "3px solid transparent" }}>
                 <span style={{ fontSize: 16, flexShrink: 0 }}>{n.icon}</span>
                 {sidebarOpen && n.label}
               </button>
@@ -2273,13 +2286,16 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: "linear-gradient(180deg, #f0f4ff 0%, #f8fafc 100%)", position: "relative", zIndex: 3 }}>
-          <div style={{ padding: "12px 24px", background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: darkMode ? "linear-gradient(180deg, #0f1729 0%, #1a2332 100%)" : "linear-gradient(180deg, #f0f4ff 0%, #f8fafc 100%)", position: "relative", zIndex: 3 }}>
+          <div style={{ padding: "12px 24px", background: darkMode ? "rgba(26,35,50,0.9)" : "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 20 }}>{NAV.find(n => n.id === tab)?.icon || "⊞"}</span>
               <div style={{ fontWeight: 700, fontSize: 18, color: T.text }}>{TITLES[tab]}</div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <button onClick={toggleDark} title={darkMode ? "Light mode" : "Dark mode"} style={{ background: darkMode ? "#253447" : "#f1f5f9", border: `1px solid ${T.border}`, borderRadius: 8, width: 34, height: 34, cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}>
+                {darkMode ? "☀️" : "🌙"}
+              </button>
               <span style={{ fontSize: 18, animation: "pulse 3s ease-in-out infinite" }}>🇬🇧</span>
               <Chip label={isInstructor ? "Instructor" : "Student"} color={isInstructor ? T.amber : T.primary} />
             </div>
