@@ -1293,31 +1293,116 @@ function ChatTab({ user }) {
     const r = await api.post("/chat", { message: msg });
     setMsgs(m => [...m, r.data]);
   };
+
+  const formatDate = (dateStr) => {
+    const d = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    if (d.toDateString() === today.toDateString()) return "Today";
+    if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
+    return d.toLocaleDateString([], { month: "short", day: "numeric" });
+  };
+
+  const groupedMsgs = [];
+  let lastDate = "";
+  msgs.forEach(m => {
+    const dateLabel = formatDate(m.created_at);
+    if (dateLabel !== lastDate) {
+      groupedMsgs.push({ type: "date", label: dateLabel });
+      lastDate = dateLabel;
+    }
+    groupedMsgs.push({ type: "msg", data: m });
+  });
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 130px)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 14, borderBottom: `1px solid ${T.border}`, marginBottom: 14 }}>
-        <div style={{ width: 8, height: 8, borderRadius: "50%", background: T.green }} />
-        <span style={{ color: T.text2, fontSize: 13, fontWeight: 600 }}>Group Chat</span>
+      {/* Chat header */}
+      <div style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #4f46e5 100%)", borderRadius: 14, padding: "16px 20px", marginBottom: 16, display: "flex", alignItems: "center", gap: 14, boxShadow: "0 4px 16px rgba(37,99,235,0.2)", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: -15, right: 40, width: 50, height: 50, borderRadius: "50%", background: "rgba(255,255,255,0.04)", pointerEvents: "none" }} />
+        <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(255,255,255,0.18)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, position: "relative", zIndex: 1 }}>💬</div>
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <div style={{ color: "white", fontWeight: 800, fontSize: 15, fontFamily: "'Nunito',sans-serif" }}>Class Discussion</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#4ade80", boxShadow: "0 0 6px rgba(74,222,128,0.6)" }} />
+            <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 11 }}>Live · {msgs.length} messages</span>
+          </div>
+        </div>
+        <div style={{ marginLeft: "auto", position: "relative", zIndex: 1 }}>
+          <svg width="48" height="42" viewBox="0 0 48 42" fill="none" style={{ opacity: 0.25 }}>
+            <rect x="2" y="2" width="30" height="24" rx="6" stroke="white" strokeWidth="2" fill="none"/>
+            <rect x="16" y="16" width="30" height="24" rx="6" stroke="white" strokeWidth="2" fill="none"/>
+            <circle cx="12" cy="14" r="2" fill="white"/>
+            <circle cx="17" cy="14" r="2" fill="white"/>
+            <circle cx="22" cy="14" r="2" fill="white"/>
+          </svg>
+        </div>
       </div>
-      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
-        {msgs.map(m => {
+
+      {/* Messages area */}
+      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 4, padding: "0 4px", scrollbarWidth: "thin" }}>
+        {msgs.length === 0 && (
+          <div style={{ textAlign: "center", padding: "60px 20px", color: T.text3 }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>💬</div>
+            <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>No messages yet</div>
+            <div style={{ fontSize: 12 }}>Start the conversation with your classmates!</div>
+          </div>
+        )}
+        {groupedMsgs.map((item, i) => {
+          if (item.type === "date") return (
+            <div key={`date-${i}`} style={{ display: "flex", alignItems: "center", gap: 12, margin: "14px 0 8px" }}>
+              <div style={{ flex: 1, height: 1, background: T.border }} />
+              <span style={{ color: T.text3, fontSize: 11, fontWeight: 600, background: T.bg, padding: "2px 12px", borderRadius: 10 }}>{item.label}</span>
+              <div style={{ flex: 1, height: 1, background: T.border }} />
+            </div>
+          );
+          const m = item.data;
           const self = m.user_id === user?.id;
           return (
-            <div key={m.id} style={{ display: "flex", gap: 10, flexDirection: self ? "row-reverse" : "row" }}>
-              <Av name={m.author_name || "?"} color={m.avatar_color || T.primary} size={30} />
-              <div style={{ maxWidth: "70%" }}>
-                {!self && <div style={{ color: T.text3, fontSize: 11, fontWeight: 600, marginBottom: 3 }}>{m.author_name}</div>}
-                <div style={{ background: self ? T.primary : T.bg2, color: self ? "#fff" : T.text, border: self ? "none" : `1px solid ${T.border}`, borderRadius: self ? "14px 4px 14px 14px" : "4px 14px 14px 14px", padding: "9px 13px", fontSize: 13, lineHeight: 1.5 }}>{m.message}</div>
-                <div style={{ color: T.text3, fontSize: 10, marginTop: 3, textAlign: self ? "right" : "left" }}>{new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>
+            <div key={m.id} style={{ display: "flex", gap: 10, flexDirection: self ? "row-reverse" : "row", marginBottom: 6, animation: "fadeUp .2s ease" }}>
+              {!self && <Av name={m.author_name || "?"} color={m.avatar_color || T.primary} size={32} />}
+              <div style={{ maxWidth: "65%" }}>
+                {!self && <div style={{ color: m.avatar_color || T.primary, fontSize: 11, fontWeight: 700, marginBottom: 3 }}>{m.author_name}</div>}
+                <div style={{
+                  background: self ? "linear-gradient(135deg, #2563eb, #4f46e5)" : T.bg1,
+                  color: self ? "#fff" : T.text,
+                  border: self ? "none" : `1px solid ${T.border}`,
+                  borderRadius: self ? "18px 4px 18px 18px" : "4px 18px 18px 18px",
+                  padding: "10px 15px",
+                  fontSize: 13,
+                  lineHeight: 1.6,
+                  boxShadow: self ? "0 3px 12px rgba(37,99,235,0.2)" : "0 1px 4px rgba(0,0,0,0.04)",
+                  wordBreak: "break-word"
+                }}>{m.message}</div>
+                <div style={{ color: T.text3, fontSize: 10, marginTop: 3, textAlign: self ? "right" : "left", display: "flex", alignItems: "center", gap: 4, justifyContent: self ? "flex-end" : "flex-start" }}>
+                  {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  {self && <span style={{ color: "#60a5fa", fontSize: 11 }}>✓</span>}
+                </div>
               </div>
             </div>
           );
         })}
         <div ref={ref} />
       </div>
-      <div style={{ display: "flex", gap: 10, paddingTop: 14, borderTop: `1px solid ${T.border}`, marginTop: 14 }}>
-        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Type a message..." style={{ flex: 1, background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 14px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif" }} />
-        <button onClick={send} style={{ background: T.primary, border: "none", borderRadius: 10, width: 42, height: 42, color: "#fff", cursor: "pointer", fontSize: 16 }}>↑</button>
+
+      {/* Input area */}
+      <div style={{ paddingTop: 12, borderTop: `1px solid ${T.border}`, marginTop: 8 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", background: T.bg2, border: `1.5px solid ${T.border}`, borderRadius: 14, padding: "4px 4px 4px 16px", transition: "border-color 0.2s" }}
+          onFocus={e => e.currentTarget.style.borderColor = T.primary}
+          onBlur={e => e.currentTarget.style.borderColor = T.border}>
+          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Type a message..." style={{ flex: 1, background: "transparent", border: "none", padding: "10px 0", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif" }} />
+          <button onClick={send} disabled={!input.trim()} style={{
+            background: input.trim() ? "linear-gradient(135deg, #2563eb, #4f46e5)" : T.bg3,
+            border: "none", borderRadius: 10, width: 40, height: 40,
+            color: input.trim() ? "#fff" : T.text3,
+            cursor: input.trim() ? "pointer" : "default",
+            fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "all 0.2s",
+            boxShadow: input.trim() ? "0 3px 10px rgba(37,99,235,0.3)" : "none"
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
       </div>
     </div>
   );
