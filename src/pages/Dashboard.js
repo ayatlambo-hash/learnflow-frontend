@@ -1030,6 +1030,109 @@ function ModulesTab({ isInstructor }) {
   const COLORS = ["#2563eb", "#0891b2", "#7c3aed", "#16a34a", "#d97706", "#dc2626"];
   const MODULE_COLORS = ["#2563eb", "#0891b2", "#1d4ed8", "#0369a1"];
 
+  const getModuleCardBg = (title, idx) => {
+    const t = (title || "").toLowerCase();
+    const gradients = [
+      "linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%)",
+      "linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #8b5cf6 100%)",
+      "linear-gradient(135deg, #065f46 0%, #059669 50%, #10b981 100%)",
+      "linear-gradient(135deg, #92400e 0%, #d97706 50%, #f59e0b 100%)",
+    ];
+    const bg = gradients[idx % gradients.length];
+
+    if (t.includes("foundation") || t.includes("module 1")) return {
+      bg,
+      svg: (
+        <svg width="120" height="100" viewBox="0 0 120 100" fill="none" style={{ position: "absolute", right: 8, top: 0, opacity: 0.15, pointerEvents: "none" }}>
+          <rect x="10" y="20" width="45" height="60" rx="4" stroke="white" strokeWidth="2" fill="none"/>
+          <line x1="18" y1="35" x2="47" y2="35" stroke="white" strokeWidth="1.5"/>
+          <line x1="18" y1="45" x2="47" y2="45" stroke="white" strokeWidth="1.5"/>
+          <line x1="18" y1="55" x2="40" y2="55" stroke="white" strokeWidth="1.5"/>
+          <rect x="65" y="10" width="45" height="35" rx="6" stroke="white" strokeWidth="2" fill="none"/>
+          <polygon points="82,20 82,38 96,29" fill="white"/>
+          <path d="M70 60 Q70 50 80 50 Q90 50 90 60" stroke="white" strokeWidth="2" fill="none"/>
+          <rect x="66" y="58" width="8" height="14" rx="4" fill="white"/>
+          <rect x="86" y="58" width="8" height="14" rx="4" fill="white"/>
+          <circle cx="80" cy="85" r="10" stroke="white" strokeWidth="2" fill="none"/>
+          <text x="80" y="90" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">A+</text>
+        </svg>
+      )
+    };
+    if (t.includes("register") || t.includes("instructional") || t.includes("module 2")) return {
+      bg,
+      svg: (
+        <svg width="120" height="100" viewBox="0 0 120 100" fill="none" style={{ position: "absolute", right: 8, top: 0, opacity: 0.15, pointerEvents: "none" }}>
+          <rect x="10" y="15" width="50" height="70" rx="5" stroke="white" strokeWidth="2" fill="none"/>
+          <rect x="10" y="15" width="50" height="18" rx="5" fill="white" opacity="0.3"/>
+          <text x="35" y="29" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold">FORMAL</text>
+          <line x1="18" y1="42" x2="52" y2="42" stroke="white" strokeWidth="1.5"/>
+          <line x1="18" y1="52" x2="52" y2="52" stroke="white" strokeWidth="1.5"/>
+          <line x1="18" y1="62" x2="45" y2="62" stroke="white" strokeWidth="1.5"/>
+          <rect x="70" y="25" width="40" height="28" rx="10" stroke="white" strokeWidth="2" fill="none"/>
+          <text x="90" y="43" textAnchor="middle" fill="white" fontSize="8" fontWeight="bold">Hello!</text>
+          <polygon points="80,52 92,52 84,62" fill="white" opacity="0.5"/>
+          <rect x="68" y="65" width="44" height="25" rx="10" stroke="white" strokeWidth="2" fill="none"/>
+          <text x="90" y="81" textAnchor="middle" fill="white" fontSize="7" fontWeight="bold">Dear Sir...</text>
+        </svg>
+      )
+    };
+    if (t.includes("digital") || t.includes("efl") || t.includes("module 3")) return {
+      bg,
+      svg: (
+        <svg width="120" height="100" viewBox="0 0 120 100" fill="none" style={{ position: "absolute", right: 8, top: 0, opacity: 0.15, pointerEvents: "none" }}>
+          <rect x="5" y="20" width="55" height="40" rx="4" stroke="white" strokeWidth="2" fill="none"/>
+          <rect x="18" y="62" width="30" height="4" rx="2" fill="white"/>
+          <circle cx="33" cy="40" r="8" stroke="white" strokeWidth="1.5" fill="none"/>
+          <polygon points="30,36 30,44 38,40" fill="white"/>
+          <rect x="70" y="10" width="38" height="55" rx="6" stroke="white" strokeWidth="2" fill="none"/>
+          <rect x="82" y="58" width="14" height="3" rx="1.5" fill="white"/>
+          <line x1="76" y1="22" x2="102" y2="22" stroke="white" strokeWidth="1"/>
+          <line x1="76" y1="30" x2="102" y2="30" stroke="white" strokeWidth="1"/>
+          <line x1="76" y1="38" x2="96" y2="38" stroke="white" strokeWidth="1"/>
+          <circle cx="88" cy="50" r="3" fill="white" opacity="0.6"/>
+          <path d="M20 80 L35 75 L50 82 L65 72 L80 78 L95 70 L110 76" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round"/>
+          <circle cx="20" cy="80" r="3" fill="white"/>
+          <circle cx="110" cy="76" r="3" fill="white"/>
+        </svg>
+      )
+    };
+    if (t.includes("intercultural") || t.includes("icc") || t.includes("module 4")) return {
+      bg,
+      svg: (
+        <svg width="120" height="100" viewBox="0 0 120 100" fill="none" style={{ position: "absolute", right: 8, top: 0, opacity: 0.15, pointerEvents: "none" }}>
+          <circle cx="35" cy="40" r="25" stroke="white" strokeWidth="2" fill="none"/>
+          <ellipse cx="35" cy="40" rx="10" ry="25" stroke="white" strokeWidth="1.5" fill="none"/>
+          <line x1="10" y1="40" x2="60" y2="40" stroke="white" strokeWidth="1.5"/>
+          <line x1="35" y1="15" x2="35" y2="65" stroke="white" strokeWidth="1.5"/>
+          <circle cx="85" cy="30" r="10" stroke="white" strokeWidth="2" fill="none"/>
+          <line x1="85" y1="40" x2="85" y2="60" stroke="white" strokeWidth="2"/>
+          <line x1="75" y1="48" x2="95" y2="48" stroke="white" strokeWidth="2"/>
+          <circle cx="100" cy="55" r="10" stroke="white" strokeWidth="2" fill="none"/>
+          <line x1="100" y1="65" x2="100" y2="80" stroke="white" strokeWidth="2"/>
+          <line x1="90" y1="72" x2="110" y2="72" stroke="white" strokeWidth="2"/>
+          <path d="M55 75 Q70 65 85 75" stroke="white" strokeWidth="1.5" fill="none" strokeDasharray="3,3"/>
+          <text x="25" y="90" fill="white" fontSize="8" fontWeight="bold">EN</text>
+          <text x="55" y="90" fill="white" fontSize="8" fontWeight="bold">FR</text>
+          <text x="85" y="90" fill="white" fontSize="8" fontWeight="bold">KZ</text>
+        </svg>
+      )
+    };
+    return {
+      bg,
+      svg: (
+        <svg width="120" height="100" viewBox="0 0 120 100" fill="none" style={{ position: "absolute", right: 8, top: 0, opacity: 0.15, pointerEvents: "none" }}>
+          <rect x="20" y="15" width="50" height="65" rx="5" stroke="white" strokeWidth="2" fill="none"/>
+          <line x1="28" y1="30" x2="62" y2="30" stroke="white" strokeWidth="1.5"/>
+          <line x1="28" y1="40" x2="62" y2="40" stroke="white" strokeWidth="1.5"/>
+          <line x1="28" y1="50" x2="55" y2="50" stroke="white" strokeWidth="1.5"/>
+          <line x1="28" y1="60" x2="62" y2="60" stroke="white" strokeWidth="1.5"/>
+          <circle cx="90" cy="45" r="18" stroke="white" strokeWidth="2" fill="none"/>
+          <text x="90" y="50" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">📖</text>
+        </svg>
+      )
+    };
+  };
+
   return (
     <div>
       {addingMod && (
@@ -1051,12 +1154,15 @@ function ModulesTab({ isInstructor }) {
       )}
       {isInstructor && <div style={{ marginBottom: 20 }}><Btn onClick={() => setAddingMod(true)}>+ New Module</Btn></div>}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 14 }}>
-        {modules.map((m, idx) => (
+        {modules.map((m, idx) => {
+          const mcBg = getModuleCardBg(m.title, idx);
+          return (
           <Card key={m.id} onClick={() => openModule(m)} style={{ padding: 0, overflow: "hidden", border: `1px solid ${T.border}`, animation: `fadeUp .3s ease ${idx * 0.07}s both` }}>
-            <div style={{ height: 100, background: `linear-gradient(135deg, ${MODULE_COLORS[idx % MODULE_COLORS.length]}, ${MODULE_COLORS[(idx + 1) % MODULE_COLORS.length]})`, display: "flex", alignItems: "center", padding: "0 20px", gap: 14, position: "relative", overflow: "hidden" }}>
-              <div style={{ position: "absolute", top: -20, right: -20, width: 90, height: 90, borderRadius: "50%", background: "rgba(255,255,255,0.08)", pointerEvents: "none" }} />
-              <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>�</div>
-              <div style={{ color: "#fff" }}>
+            <div style={{ height: 100, background: mcBg.bg, display: "flex", alignItems: "center", padding: "0 20px", gap: 14, position: "relative", overflow: "hidden" }}>
+              {mcBg.svg}
+              <div style={{ position: "absolute", top: -20, right: -20, width: 90, height: 90, borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
+              <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, position: "relative", zIndex: 1 }}>{m.icon || "📖"}</div>
+              <div style={{ color: "#fff", position: "relative", zIndex: 1 }}>
                 <div style={{ fontWeight: 700, fontSize: 14 }}>{m.title?.split(":")[0]?.split(" ").slice(0, 2).join(" ")}</div>
                 <div style={{ fontSize: 12, opacity: 0.8 }}>{m.lesson_count} lessons</div>
               </div>
@@ -1070,7 +1176,8 @@ function ModulesTab({ isInstructor }) {
               <Bar val={m.progress} color={MODULE_COLORS[idx % MODULE_COLORS.length]} h={5} />
             </div>
           </Card>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
