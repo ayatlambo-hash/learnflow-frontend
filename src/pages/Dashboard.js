@@ -2235,6 +2235,31 @@ export default function Dashboard() {
               </button>
             ))}
           </nav>
+          {sidebarOpen && (
+            <div style={{ padding: "10px 12px", marginTop: "auto" }}>
+              <div style={{ background: "linear-gradient(135deg, #1e3a8a, #2563eb, #4f46e5)", borderRadius: 14, padding: "16px 14px", color: "#fff", position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", top: -15, right: -15, width: 60, height: 60, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
+                <div style={{ position: "absolute", bottom: -10, left: -10, width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+                <svg width="100%" height="60" viewBox="0 0 180 60" fill="none" style={{ marginBottom: 8 }}>
+                  <rect x="5" y="10" width="35" height="45" rx="4" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" fill="none"/>
+                  <line x1="10" y1="20" x2="35" y2="20" stroke="rgba(255,255,255,0.3)" strokeWidth="1"/>
+                  <line x1="10" y1="27" x2="35" y2="27" stroke="rgba(255,255,255,0.3)" strokeWidth="1"/>
+                  <line x1="10" y1="34" x2="30" y2="34" stroke="rgba(255,255,255,0.3)" strokeWidth="1"/>
+                  <path d="M55 30 Q55 15 70 15 Q85 15 85 30" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" fill="none"/>
+                  <rect x="52" y="28" width="6" height="10" rx="3" fill="rgba(255,255,255,0.3)"/>
+                  <rect x="80" y="28" width="6" height="10" rx="3" fill="rgba(255,255,255,0.3)"/>
+                  <circle cx="120" cy="30" r="18" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" fill="none"/>
+                  <ellipse cx="120" cy="30" rx="7" ry="18" stroke="rgba(255,255,255,0.25)" strokeWidth="1" fill="none"/>
+                  <line x1="102" y1="30" x2="138" y2="30" stroke="rgba(255,255,255,0.25)" strokeWidth="1"/>
+                  <polygon points="155,12 155,48 175,30" fill="rgba(255,255,255,0.2)"/>
+                </svg>
+                <div style={{ fontSize: 11, fontWeight: 700, opacity: 0.9, marginBottom: 4, position: "relative", zIndex: 1 }}>Keep Learning!</div>
+                <div style={{ fontSize: 10, opacity: 0.7, lineHeight: 1.5, position: "relative", zIndex: 1 }}>
+                  {["The more you practice, the better you get.", "Every expert was once a beginner.", "Learning never exhausts the mind.", "Education is the passport to the future."][new Date().getDay() % 4]}
+                </div>
+              </div>
+            </div>
+          )}
           <div style={{ padding: "12px 8px", borderTop: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 10, overflow: "hidden" }}>
             <Av name={user?.name || "User"} color={user?.avatar_color || T.primary} size={32} />
             {sidebarOpen && (
