@@ -1343,11 +1343,16 @@ function ChatTab({ user }) {
       <div style={{
         flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 4, padding: "12px 8px", scrollbarWidth: "thin",
         borderRadius: 12,
-        background: `#e8eef6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cg fill='none' stroke='%238ba3c4' stroke-width='1.3'%3E%3Crect x='10' y='10' width='22' height='30' rx='3'/%3E%3Cline x1='14' y1='18' x2='28' y2='18'/%3E%3Cline x1='14' y1='23' x2='28' y2='23'/%3E%3Cline x1='14' y1='28' x2='24' y2='28'/%3E%3Ccircle cx='70' cy='25' r='13'/%3E%3Cellipse cx='70' cy='25' rx='5' ry='13'/%3E%3Cline x1='57' y1='25' x2='83' y2='25'/%3E%3Crect x='105' y='12' width='28' height='20' rx='8'/%3E%3Ccircle cx='114' cy='22' r='2' fill='%238ba3c4'/%3E%3Ccircle cx='119' cy='22' r='2' fill='%238ba3c4'/%3E%3Ccircle cx='124' cy='22' r='2' fill='%238ba3c4'/%3E%3Cpath d='M10 65Q10 55 20 55Q30 55 30 65'/%3E%3Crect x='8' y='63' width='6' height='10' rx='3'/%3E%3Crect x='26' y='63' width='6' height='10' rx='3'/%3E%3Crect x='55' y='55' width='35' height='25' rx='4'/%3E%3Cpolygon points='67,62 67,74 78,68' fill='%238ba3c4'/%3E%3Cpath d='M115 50L120 42L121 50'/%3E%3Crect x='117' y='50' width='6' height='20' rx='1'/%3E%3Ccircle cx='25' cy='110' r='14'/%3E%3Ctext x='25' y='115' text-anchor='middle' font-size='11' font-weight='bold' fill='%238ba3c4'%3EA%2B%3C/text%3E%3Crect x='60' y='95' width='30' height='22' rx='4'/%3E%3Crect x='65' y='119' width='20' height='4' rx='2' fill='%238ba3c4'/%3E%3Crect x='110' y='95' width='20' height='32' rx='5'/%3E%3Crect x='115' y='121' width='10' height='3' rx='1' fill='%238ba3c4'/%3E%3Crect x='15' y='140' width='36' height='18' rx='8'/%3E%3Cpolygon points='25,157 35,157 29,164' fill='%238ba3c4'/%3E%3Ccircle cx='85' cy='148' r='10'/%3E%3Cpath d='M80 148L85 142L90 148L85 154Z'/%3E%3Cpolygon points='120 135 133 135 133 158 130 154 127 158 124 154 121 158 120 135'/%3E%3C/g%3E%3C/svg%3E")`,
-        backgroundSize: "160px 160px"
+        backgroundImage: "url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1200&q=80&auto=format')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        position: "relative"
       }}>
+        {/* Semi-transparent overlay for readability */}
+        <div style={{ position: "absolute", inset: 0, background: "rgba(237,242,250,0.75)", borderRadius: 12, pointerEvents: "none", zIndex: 0 }} />
         {msgs.length === 0 && (
-          <div style={{ textAlign: "center", padding: "60px 20px", color: T.text3 }}>
+          <div style={{ textAlign: "center", padding: "60px 20px", color: T.text3, position: "relative", zIndex: 1 }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>💬</div>
             <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>No messages yet</div>
             <div style={{ fontSize: 12 }}>Start the conversation with your classmates!</div>
@@ -1355,7 +1360,7 @@ function ChatTab({ user }) {
         )}
         {groupedMsgs.map((item, i) => {
           if (item.type === "date") return (
-            <div key={`date-${i}`} style={{ display: "flex", alignItems: "center", gap: 12, margin: "14px 0 8px" }}>
+            <div key={`date-${i}`} style={{ display: "flex", alignItems: "center", gap: 12, margin: "14px 0 8px", position: "relative", zIndex: 1 }}>
               <div style={{ flex: 1, height: 1, background: T.border }} />
               <span style={{ color: T.text3, fontSize: 11, fontWeight: 600, background: T.bg, padding: "2px 12px", borderRadius: 10 }}>{item.label}</span>
               <div style={{ flex: 1, height: 1, background: T.border }} />
@@ -1364,7 +1369,7 @@ function ChatTab({ user }) {
           const m = item.data;
           const self = m.user_id === user?.id;
           return (
-            <div key={m.id} style={{ display: "flex", gap: 10, flexDirection: self ? "row-reverse" : "row", marginBottom: 6, animation: "fadeUp .2s ease" }}>
+            <div key={m.id} style={{ display: "flex", gap: 10, flexDirection: self ? "row-reverse" : "row", marginBottom: 6, animation: "fadeUp .2s ease", position: "relative", zIndex: 1 }}>
               {!self && <Av name={m.author_name || "?"} color={m.avatar_color || T.primary} size={32} />}
               <div style={{ maxWidth: "65%" }}>
                 {!self && <div style={{ color: m.avatar_color || T.primary, fontSize: 11, fontWeight: 700, marginBottom: 3 }}>{m.author_name}</div>}
