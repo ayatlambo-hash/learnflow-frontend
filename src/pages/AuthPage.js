@@ -10,7 +10,7 @@ const T = {
   green: '#00b894', red: '#e17055', amber: '#fdcb6e',
 };
 
-const INSTRUCTOR_CODE = "teacher2024";
+const INSTRUCTOR_CODE = "teacher2026";
 
 function validatePassword(password) {
   const errors = [];
