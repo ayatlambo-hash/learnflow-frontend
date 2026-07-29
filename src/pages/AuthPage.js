@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -58,9 +58,13 @@ export default function AuthPage() {
   const [instructorCode, setInstructorCode] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [wakingUp, setWakingUp] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const { login, register } = useAuth();
   const navigate = useNavigate();
+  const wakeTimerRef = useRef(null);
+
+  useEffect(() => () => clearTimeout(wakeTimerRef.current), []);
 
   const clearError = useCallback((key) => {
     setErrors(e => ({ ...e, [key]: '', general: '' }));
@@ -97,6 +101,7 @@ export default function AuthPage() {
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setLoading(true);
+    wakeTimerRef.current = setTimeout(() => setWakingUp(true), 4000);
     try {
       if (mode === 'login') {
         await login(email, password);
@@ -105,17 +110,21 @@ export default function AuthPage() {
       }
       navigate('/');
     } catch (err) {
-      const msg = err.response?.data?.error || 'Something went wrong';
-      if (msg.includes('password') || msg.includes('Invalid')) {
+      const msg = err.response?.data?.error;
+      if (!err.response) {
+        setErrors({ general: 'Could not reach the server. It may be waking up from sleep — please try again in a moment.' });
+      } else if (msg && (msg.includes('password') || msg.includes('Invalid'))) {
         setErrors({ general: 'Incorrect email or password. Please try again.' });
-      } else if (msg.includes('Email already')) {
+      } else if (msg && msg.includes('Email already')) {
         setErrors({ email: 'This email is already registered. Try signing in.' });
-      } else if (msg.includes('not found') || msg.includes('No user')) {
+      } else if (msg && (msg.includes('not found') || msg.includes('No user'))) {
         setErrors({ general: 'No account found with this email. Please register first.' });
       } else {
-        setErrors({ general: msg });
+        setErrors({ general: msg || 'Something went wrong' });
       }
     } finally {
+      clearTimeout(wakeTimerRef.current);
+      setWakingUp(false);
       setLoading(false);
     }
   };
@@ -388,8 +397,13 @@ export default function AuthPage() {
             )}
 
             <button type="submit" disabled={loading} style={{ width: '100%', background: loading ? T.border : `linear-gradient(135deg, ${T.purple}, #5a4fd4)`, border: 'none', borderRadius: 12, padding: '13px', color: loading ? T.text3 : '#fff', fontWeight: 800, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.2s', fontFamily: "'Nunito', sans-serif", boxShadow: loading ? 'none' : `0 4px 16px ${T.purple}33`, marginTop: 4 }}>
-              {loading ? 'Please wait...' : mode === 'login' ? 'Sign In →' : 'Create Account →'}
+              {loading ? (wakingUp ? 'Waking up server…' : 'Please wait...') : mode === 'login' ? 'Sign In →' : 'Create Account →'}
             </button>
+            {wakingUp && (
+              <div style={{ textAlign: 'center', color: T.text3, fontSize: 12, marginTop: 8 }}>
+                The server was asleep and is starting up — this can take up to a minute.
+              </div>
+            )}
           </form>
         </div>
 
