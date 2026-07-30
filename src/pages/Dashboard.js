@@ -419,6 +419,27 @@ function LessonUploadModal({ lesson, modId, isInstructor, onClose }) {
         </div>
       ) : isInstructor ? (
         <>
+          {lesson.type === "video" && lesson.video_url && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontWeight: 600, fontSize: 12, color: T.text2, marginBottom: 8 }}>Video URL:</div>
+              <div style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "8px 12px", fontSize: 12, color: T.text, wordBreak: "break-all", marginBottom: 10 }}>{lesson.video_url}</div>
+              {getYouTubeId(lesson.video_url) && (
+                <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", background: "#000", border: `1px solid ${T.border}` }}>
+                  <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${getYouTubeId(lesson.video_url)}`} title="Video preview" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
+                </div>
+              )}
+              {!getYouTubeId(lesson.video_url) && (
+                <a href={lesson.video_url} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 12, fontWeight: 600 }}>Open video link →</a>
+              )}
+            </div>
+          )}
+          {lesson.type === "quiz" && lesson.form_url && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontWeight: 600, fontSize: 12, color: T.text2, marginBottom: 8 }}>Quiz Form URL:</div>
+              <div style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "8px 12px", fontSize: 12, color: T.text, wordBreak: "break-all", marginBottom: 10 }}>{lesson.form_url}</div>
+              <a href={lesson.form_url} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 12, fontWeight: 600 }}>Open quiz form →</a>
+            </div>
+          )}
           {existing.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontWeight: 600, fontSize: 12, color: T.text2, marginBottom: 8 }}>Already uploaded:</div>
