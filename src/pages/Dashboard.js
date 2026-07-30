@@ -934,6 +934,16 @@ function ModulesTab({ isInstructor }) {
     setLesForm({}); setAddingLesson(false);
   };
 
+  const clearAllLessons = async () => {
+    if (!window.confirm("Delete ALL lessons from every module? This cannot be undone.")) return;
+    try {
+      await api.delete("/modules/lessons/all");
+      setLessons([]);
+    } catch (err) {
+      alert("Failed to clear lessons.");
+    }
+  };
+
   if (loading) return <div style={{ color: T.text3, padding: 20 }}>Loading modules...</div>;
 
   if (openMod) {
@@ -1058,7 +1068,12 @@ function ModulesTab({ isInstructor }) {
           </div>
         </div>
 
-        {isInstructor && <div style={{ marginBottom: 14 }}><Btn onClick={() => setAddingLesson(true)} color={T.primary}>+ Add Lesson</Btn></div>}
+        {isInstructor && (
+          <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+            <Btn onClick={() => setAddingLesson(true)} color={T.primary}>+ Add Lesson</Btn>
+            <Btn onClick={clearAllLessons} color={T.red}>⚠ Clear All Lessons</Btn>
+          </div>
+        )}
 
         {/* Lessons */}
         {lessons.map((lesson, i) => {
