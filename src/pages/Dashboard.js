@@ -476,6 +476,9 @@ function CourseNavTab({ isInstructor }) {
   const [activeLesson, setActiveLesson] = useState(null);
   const [lessonMap, setLessonMap] = useState({});
   const [loadingLessons, setLoadingLessons] = useState({});
+  const [addingLesson, setAddingLesson] = useState(false);
+  const [activeMod, setActiveMod] = useState(null);
+  const [lesForm, setLesForm] = useState({ type: "video" });
 
   useEffect(() => {
     api.get("/modules/coursenav").then(r => {
@@ -501,6 +504,25 @@ function CourseNavTab({ isInstructor }) {
   const toggleMod = (mod) => {
     setExpanded(p => ({ ...p, [mod.id]: !p[mod.id] }));
     fetchLessons(mod.id);
+  };
+
+  const saveLesson = async () => {
+    if (!lesForm.title || !activeMod) return;
+    let deadline = null;
+    if (lesForm.deadline) {
+      const d = new Date(lesForm.deadline);
+      if (!isNaN(d.getTime())) deadline = d.toISOString().split('T')[0];
+    }
+    const modLessons = lessonMap[activeMod.id] || [];
+    const r = await api.post(`/modules/${activeMod.id}/lessons`, {
+      title: lesForm.title, type: lesForm.type || "video",
+      video_url: lesForm.url, duration: lesForm.dur,
+      pages: lesForm.pages, deadline, order_index: modLessons.length
+    });
+    setLessonMap(p => ({ ...p, [activeMod.id]: [...modLessons, { ...r.data, done: false, questions: [] }] }));
+    setLesForm({ type: "video" });
+    setAddingLesson(false);
+    setActiveMod(null);
   };
 
   const palettes = [
@@ -601,6 +623,33 @@ function CourseNavTab({ isInstructor }) {
         </div>
       </div>
 
+      {addingLesson && activeMod && (
+        <Modal onClose={() => { setAddingLesson(false); setActiveMod(null); setLesForm({ type: "video" }); }} title={`Add Lesson to ${activeMod.title}`}>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Type</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {["video", "quiz", "assignment", "reading"].map(t => (
+                <button key={t} onClick={() => setLesForm(f => ({ ...f, type: t }))} style={{ flex: 1, padding: "8px 4px", borderRadius: 8, border: `1.5px solid ${lesForm.type === t ? T.primary : T.border}`, background: lesForm.type === t ? "#eff6ff" : T.bg2, cursor: "pointer", fontSize: 11, fontWeight: 600, color: lesForm.type === t ? T.primary : T.text3, fontFamily: "'Inter',sans-serif" }}>
+                  {t === "video" ? "Video" : t === "quiz" ? "Quiz" : t === "assignment" ? "Task" : "Reading"}
+                </button>
+              ))}
+            </div>
+          </div>
+          {[
+            ["title", "Lesson Title", "e.g. Introduction"],
+            ["dur", "Duration", "e.g. 12:30"],
+            ["deadline", "Deadline", "YYYY-MM-DD"],
+            ["url", lesForm.type === "quiz" ? "Google Form URL" : "Video URL", lesForm.type === "quiz" ? "https://forms.google.com/..." : "https://youtube.com/..."]
+          ].map(([k, l, p]) => (
+            <div key={k} style={{ marginBottom: 12 }}>
+              <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>{l}</div>
+              <input value={lesForm[k] || ""} onChange={e => setLesForm(f => ({ ...f, [k]: e.target.value }))} placeholder={p} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
+            </div>
+          ))}
+          <Btn onClick={saveLesson} color={T.green}>Save Lesson</Btn>
+        </Modal>
+      )}
+
       {/* Module blocks */}
       {modules.map((mod, idx) => {
         const [c1, c2] = palettes[idx % palettes.length];
@@ -633,7 +682,12 @@ function CourseNavTab({ isInstructor }) {
                 {isLoadingL && <div style={{ padding: "16px 24px", color: T.text3, fontSize: 13 }}>Loading lessons...</div>}
                 {!isLoadingL && modLessons.length === 0 && (
                   <div style={{ padding: "20px 24px", color: T.text3, fontSize: 13, textAlign: "center" }}>
-                    No lessons yet{isInstructor ? " — add lessons in the Modules tab" : ""}.
+                    No lessons yet{isInstructor ? " — click the + button below to add one" : ""}.
+                  </div>
+                )}
+                {isInstructor && (
+                  <div style={{ padding: "12px 24px", borderTop: modLessons.length > 0 ? `1px solid ${T.border}` : "none" }}>
+                    <Btn onClick={() => { setActiveMod(mod); setAddingLesson(true); }} color={T.primary}>+ Add Lesson</Btn>
                   </div>
                 )}
                 {modLessons.map((lesson, li) => {
