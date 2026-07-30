@@ -1353,14 +1353,8 @@ function ChatTab({ user }) {
       <div style={{
         flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 4, padding: "12px 8px", scrollbarWidth: "thin",
         borderRadius: 12,
-        backgroundImage: "url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1200&q=80&auto=format')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        position: "relative"
+        background: T.bg1
       }}>
-        {/* Semi-transparent overlay for readability */}
-        <div style={{ position: "absolute", inset: 0, background: "rgba(237,242,250,0.75)", borderRadius: 12, pointerEvents: "none", zIndex: 0 }} />
         {msgs.length === 0 && (
           <div style={{ textAlign: "center", padding: "60px 20px", color: T.text3, position: "relative", zIndex: 1 }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>💬</div>
