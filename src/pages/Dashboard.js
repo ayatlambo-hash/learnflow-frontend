@@ -813,6 +813,22 @@ function InstructorLessonModal({ lesson, onClose, onSaved }) {
                     style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
                 </div>
               )}
+              {isVideo && form.url && getYouTubeId(form.url) && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Preview</div>
+                  <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", background: "#000", border: `1px solid ${T.border}` }}>
+                    <iframe
+                      width="100%" height="100%"
+                      src={`https://www.youtube.com/embed/${getYouTubeId(form.url)}`}
+                      title="Video preview"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      style={{ display: "block" }}
+                    />
+                  </div>
+                </div>
+              )}
               <div style={{ marginBottom: 18 }}>
                 <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Deadline (optional)</div>
                 <input type="date" value={form.deadline} onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))}
