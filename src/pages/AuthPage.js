@@ -60,7 +60,11 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [wakingUp, setWakingUp] = useState(false);
   const [showPass, setShowPass] = useState(false);
-  const { login, register } = useAuth();
+  const [verifying, setVerifying] = useState(false);
+  const [verifyCode, setVerifyCode] = useState('');
+  const [resending, setResending] = useState(false);
+  const [resendMsg, setResendMsg] = useState('');
+  const { login, register, verifyEmail, resendCode } = useAuth();
   const navigate = useNavigate();
   const wakeTimerRef = useRef(null);
 
@@ -75,6 +79,7 @@ export default function AuthPage() {
     setErrors({});
     setName(''); setEmail(''); setPassword('');
     setConfirmPassword(''); setRole('student'); setInstructorCode('');
+    setVerifying(false); setVerifyCode(''); setResendMsg('');
   }, []);
 
   const validate = () => {
@@ -105,10 +110,11 @@ export default function AuthPage() {
     try {
       if (mode === 'login') {
         await login(email, password);
+        navigate('/');
       } else {
         await register(name, email, password, role);
+        setVerifying(true);
       }
-      navigate('/');
     } catch (err) {
       const msg = err.response?.data?.error;
       if (!err.response) {
@@ -126,6 +132,34 @@ export default function AuthPage() {
       clearTimeout(wakeTimerRef.current);
       setWakingUp(false);
       setLoading(false);
+    }
+  };
+
+  const submitVerify = async (e) => {
+    e.preventDefault();
+    if (!verifyCode.trim()) { setErrors({ general: 'Enter the verification code' }); return; }
+    setLoading(true);
+    try {
+      await verifyEmail(email, verifyCode.trim());
+      navigate('/');
+    } catch (err) {
+      const msg = err.response?.data?.error;
+      setErrors({ general: msg || 'Invalid or expired code' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResending(true);
+    setResendMsg('');
+    try {
+      await resendCode(email);
+      setResendMsg('A new code has been sent to your email.');
+    } catch (err) {
+      setResendMsg(err.response?.data?.error || 'Could not resend code');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -287,15 +321,64 @@ export default function AuthPage() {
         </div>
 
         <div style={{ background: T.bg1, border: `1.5px solid ${T.border}`, borderRadius: 22, padding: 32, boxShadow: '0 8px 40px rgba(108,92,231,0.10)' }}>
-          <div style={{ display: 'flex', background: T.bg2, borderRadius: 12, padding: 4, marginBottom: 26 }}>
-            {['login', 'register'].map(m => (
-              <button key={m} type="button" onClick={() => switchMode(m)}
-                style={{ flex: 1, padding: '9px', borderRadius: 10, border: 'none', background: mode === m ? T.bg1 : 'transparent', color: mode === m ? T.purple : T.text3, fontWeight: mode === m ? 800 : 600, cursor: 'pointer', fontSize: 14, transition: 'all 0.2s', fontFamily: "'Nunito', sans-serif", boxShadow: mode === m ? '0 2px 8px rgba(108,92,231,0.10)' : 'none' }}>
-                {m === 'login' ? '🔑 Sign In' : '✨ Register'}
-              </button>
-            ))}
-          </div>
+          {!verifying && (
+            <div style={{ display: 'flex', background: T.bg2, borderRadius: 12, padding: 4, marginBottom: 26 }}>
+              {['login', 'register'].map(m => (
+                <button key={m} type="button" onClick={() => switchMode(m)}
+                  style={{ flex: 1, padding: '9px', borderRadius: 10, border: 'none', background: mode === m ? T.bg1 : 'transparent', color: mode === m ? T.purple : T.text3, fontWeight: mode === m ? 800 : 600, cursor: 'pointer', fontSize: 14, transition: 'all 0.2s', fontFamily: "'Nunito', sans-serif", boxShadow: mode === m ? '0 2px 8px rgba(108,92,231,0.10)' : 'none' }}>
+                  {m === 'login' ? '🔑 Sign In' : '✨ Register'}
+                </button>
+              ))}
+            </div>
+          )}
 
+          {verifying ? (
+            <form onSubmit={submitVerify}>
+              <div style={{ textAlign: 'center', marginBottom: 18 }}>
+                <div style={{ fontSize: 34, marginBottom: 8 }}>📧</div>
+                <div style={{ fontWeight: 800, fontSize: 16, color: T.text, marginBottom: 4 }}>Verify your email</div>
+                <div style={{ color: T.text3, fontSize: 13 }}>We sent a 6-digit code to <b>{email}</b>. Enter it below to finish creating your account.</div>
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ color: T.text2, fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 5 }}>Verification Code</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={verifyCode}
+                  onChange={e => { setVerifyCode(e.target.value.replace(/\D/g, '')); clearError('general'); }}
+                  placeholder="123456"
+                  style={{ width: '100%', textAlign: 'center', letterSpacing: '8px', fontSize: 22, fontWeight: 800, background: T.bg2, border: `1.5px solid ${T.border}`, borderRadius: 10, padding: '12px 14px', color: T.text, outline: 'none', fontFamily: "'Nunito', sans-serif", boxSizing: 'border-box' }}
+                />
+              </div>
+
+              {errors.general && (
+                <div style={{ background: T.red + '12', border: `1.5px solid ${T.red}44`, borderRadius: 10, padding: '11px 14px', color: T.red, fontSize: 13, fontWeight: 600, marginBottom: 14 }}>
+                  ✕ {errors.general}
+                </div>
+              )}
+              {resendMsg && (
+                <div style={{ background: T.green + '12', border: `1.5px solid ${T.green}44`, borderRadius: 10, padding: '11px 14px', color: T.green, fontSize: 13, fontWeight: 600, marginBottom: 14 }}>
+                  {resendMsg}
+                </div>
+              )}
+
+              <button type="submit" disabled={loading} style={{ width: '100%', background: loading ? T.border : `linear-gradient(135deg, ${T.purple}, #5a4fd4)`, border: 'none', borderRadius: 12, padding: '13px', color: loading ? T.text3 : '#fff', fontWeight: 800, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.2s', fontFamily: "'Nunito', sans-serif", boxShadow: loading ? 'none' : `0 4px 16px ${T.purple}33`, marginTop: 4 }}>
+                {loading ? 'Verifying...' : 'Verify & Create Account →'}
+              </button>
+
+              <div style={{ textAlign: 'center', marginTop: 14 }}>
+                <button type="button" disabled={resending} onClick={handleResend} style={{ background: 'none', border: 'none', color: T.purple, cursor: resending ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700 }}>
+                  {resending ? 'Resending...' : "Didn't get a code? Resend"}
+                </button>
+              </div>
+              <div style={{ textAlign: 'center', marginTop: 8 }}>
+                <button type="button" onClick={() => switchMode('register')} style={{ background: 'none', border: 'none', color: T.text3, cursor: 'pointer', fontSize: 12 }}>
+                  ← Back to registration
+                </button>
+              </div>
+            </form>
+          ) : (
           <form onSubmit={submit}>
             {mode === 'register' && (
               <div style={{ marginBottom: 14 }}>
@@ -405,14 +488,17 @@ export default function AuthPage() {
               </div>
             )}
           </form>
+          )}
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: 20, color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
-          {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-          <button type="button" onClick={() => switchMode(mode === 'login' ? 'register' : 'login')} style={{ background: 'none', border: 'none', color: T.purple, cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
-            {mode === 'login' ? 'Register' : 'Sign In'}
-          </button>
-        </div>
+        {!verifying && (
+          <div style={{ textAlign: 'center', marginTop: 20, color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
+            {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+            <button type="button" onClick={() => switchMode(mode === 'login' ? 'register' : 'login')} style={{ background: 'none', border: 'none', color: T.purple, cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+              {mode === 'login' ? 'Register' : 'Sign In'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
