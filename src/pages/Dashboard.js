@@ -94,6 +94,12 @@ function VideoModal({ lesson, onClose, onComplete }) {
   const ytId = getYouTubeId(lesson.video_url);
   return (
     <Modal onClose={onClose} title={lesson.title}>
+      {lesson.instructions && (
+        <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
+          <div style={{ fontWeight: 700, fontSize: 12, color: T.primary, marginBottom: 6 }}>📝 Instructions</div>
+          <div style={{ color: T.text, fontSize: 13, whiteSpace: "pre-wrap" }}>{lesson.instructions}</div>
+        </div>
+      )}
       <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", marginBottom: 16, background: "#000" }}>
         {ytId ? (
           <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${ytId}?autoplay=1`} title={lesson.title} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
@@ -140,6 +146,12 @@ function QuizModal({ lesson, onClose, onComplete, lessons, activeLessonIdx }) {
 
   return (
     <Modal onClose={onClose} title={lesson.title}>
+      {lesson.instructions && (
+        <div style={{ background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
+          <div style={{ fontWeight: 700, fontSize: 12, color: "#7c3aed", marginBottom: 6 }}>📝 Instructions</div>
+          <div style={{ color: T.text, fontSize: 13, whiteSpace: "pre-wrap" }}>{lesson.instructions}</div>
+        </div>
+      )}
       {inner}
       {/* Progress bar */}
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: T.text3, marginBottom: 5, marginTop: 8 }}>
@@ -209,6 +221,12 @@ function UploadModal({ lesson, onClose, onComplete, lessons, activeLessonIdx }) 
         </div>
       ) : (
         <>
+          {lesson.instructions && (
+            <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, fontSize: 12, color: T.amber, marginBottom: 6 }}>📝 Instructions</div>
+              <div style={{ color: T.text, fontSize: 13, whiteSpace: "pre-wrap" }}>{lesson.instructions}</div>
+            </div>
+          )}
           <div onClick={() => ref.current.click()} style={{ border: `2px dashed ${T.border2}`, borderRadius: 12, padding: "28px 20px", textAlign: "center", cursor: "pointer", background: T.bg2, marginBottom: 14, transition: "border-color 0.2s" }}
             onMouseEnter={e => e.currentTarget.style.borderColor = T.amber}
             onMouseLeave={e => e.currentTarget.style.borderColor = T.border2}>
@@ -765,7 +783,7 @@ function CourseNavTab({ isInstructor }) {
 }
 
 function InstructorLessonModal({ lesson, onClose, onSaved }) {
-  const [form, setForm] = useState({ url: lesson.video_url || "", duration: lesson.duration || "", deadline: lesson.deadline || "" });
+  const [form, setForm] = useState({ url: lesson.video_url || "", duration: lesson.duration || "", deadline: lesson.deadline || "", instructions: lesson.instructions || "" });
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [done, setDone] = useState(false);
@@ -776,8 +794,8 @@ function InstructorLessonModal({ lesson, onClose, onSaved }) {
   const isUpload = lesson.type === "assignment" || lesson.type === "reading";
 
   const saveUrl = async () => {
-    await api.patch(`/modules/lessons/${lesson.id}`, { video_url: form.url, duration: form.duration, deadline: form.deadline });
-    onSaved && onSaved({ ...lesson, video_url: form.url, duration: form.duration, deadline: form.deadline });
+    await api.patch(`/modules/lessons/${lesson.id}`, { video_url: form.url, duration: form.duration, deadline: form.deadline, instructions: form.instructions });
+    onSaved && onSaved({ ...lesson, video_url: form.url, duration: form.duration, deadline: form.deadline, instructions: form.instructions });
     onClose();
   };
 
@@ -855,6 +873,13 @@ function InstructorLessonModal({ lesson, onClose, onSaved }) {
                 <input type="date" value={form.deadline} onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))}
                   style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
               </div>
+              <div style={{ marginBottom: 18 }}>
+                <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Instructions for students</div>
+                <textarea value={form.instructions} onChange={e => setForm(f => ({ ...f, instructions: e.target.value }))}
+                  placeholder="Describe what students need to do..."
+                  rows={4}
+                  style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box", resize: "vertical" }} />
+              </div>
               <Btn onClick={saveUrl} color={tc.color} disabled={!form.url}>💾 Save</Btn>
             </>
           )}
@@ -866,7 +891,14 @@ function InstructorLessonModal({ lesson, onClose, onSaved }) {
                 <input type="date" value={form.deadline} onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))}
                   style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
               </div>
-              {form.deadline && <div style={{ marginBottom: 14 }}><Btn onClick={saveUrl} color={T.teal}>💾 Save Deadline</Btn></div>}
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Instructions for students</div>
+                <textarea value={form.instructions} onChange={e => setForm(f => ({ ...f, instructions: e.target.value }))}
+                  placeholder="Describe what students need to do..."
+                  rows={4}
+                  style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box", resize: "vertical" }} />
+              </div>
+              <div style={{ marginBottom: 14 }}><Btn onClick={saveUrl} color={T.teal}>💾 Save Instructions</Btn></div>
               <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Upload files for students</div>
               <div onClick={() => ref.current.click()} style={{ border: `2px dashed ${T.border2}`, borderRadius: 12, padding: "26px 20px", textAlign: "center", cursor: "pointer", background: T.bg2, marginBottom: 14, transition: "border-color 0.2s" }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = tc.color}
