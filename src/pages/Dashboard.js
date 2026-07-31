@@ -2209,102 +2209,51 @@ function HomeTab({ isInstructor }) {
         </Card>
       ))}
 
-      {/* English course illustrations — visible in free space at bottom */}
+      {/* Assessment Strategy & Learning Resources */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 24 }}>
 
-        {/* Card 1 — Communication Skills */}
+        {/* Card 1 — Assessment Strategy */}
         <div style={{ borderRadius: 16, overflow: "hidden", background: "linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #4f46e5 100%)", padding: "20px", display: "flex", gap: 16, alignItems: "center", boxShadow: "0 4px 20px rgba(37,99,235,0.22)" }}>
-          {/* Card 1 illustration — headphones + speech bubbles */}
-          <svg width="130" height="130" viewBox="0 0 260 260" fill="none" style={{ flexShrink: 0 }}>
-            {/* Headphones */}
-            <path d="M60 130 Q60 60 130 60 Q200 60 200 130" stroke="rgba(255,255,255,0.5)" strokeWidth="10" fill="none" strokeLinecap="round"/>
-            <rect x="44" y="126" width="30" height="46" rx="14" fill="rgba(255,255,255,0.25)"/>
-            <rect x="50" y="132" width="18" height="34" rx="9" fill="white"/>
-            <rect x="186" y="126" width="30" height="46" rx="14" fill="rgba(255,255,255,0.25)"/>
-            <rect x="192" y="132" width="18" height="34" rx="9" fill="white"/>
-            {/* Speaking bubble */}
-            <rect x="30" y="28" width="90" height="38" rx="12" fill="rgba(255,255,255,0.18)"/>
-            <text x="75" y="51" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold" fontFamily="'Nunito',sans-serif">Speaking</text>
-            <polygon points="60,65 80,65 65,78" fill="rgba(255,255,255,0.18)"/>
-            {/* Listening bubble */}
-            <rect x="138" y="28" width="90" height="38" rx="12" fill="rgba(255,255,255,0.18)"/>
-            <text x="183" y="51" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold" fontFamily="'Nunito',sans-serif">Listening</text>
-            <polygon points="168,65 188,65 175,78" fill="rgba(255,255,255,0.18)"/>
-            {/* Grammar pills row */}
-            <rect x="30" y="195" width="44" height="26" rx="13" fill="rgba(255,255,255,0.22)"/>
-            <text x="52" y="213" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">Am</text>
-            <rect x="82" y="195" width="34" height="26" rx="13" fill="rgba(255,255,255,0.22)"/>
-            <text x="99" y="213" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">Is</text>
-            <rect x="124" y="195" width="40" height="26" rx="13" fill="rgba(255,255,255,0.22)"/>
-            <text x="144" y="213" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">Are</text>
-            <rect x="172" y="195" width="40" height="26" rx="13" fill="rgba(255,255,255,0.22)"/>
-            <text x="192" y="213" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">Did</text>
-            {/* UK flag */}
-            <rect x="96" y="235" width="68" height="42" rx="4" fill="rgba(255,255,255,0.15)"/>
-            <rect x="96" y="235" width="68" height="42" rx="4" fill="#012169" opacity="0.7"/>
-            <line x1="96" y1="235" x2="164" y2="277" stroke="white" strokeWidth="7" opacity="0.6"/>
-            <line x1="164" y1="235" x2="96" y2="277" stroke="white" strokeWidth="7" opacity="0.6"/>
-            <line x1="130" y1="235" x2="130" y2="277" stroke="white" strokeWidth="10" opacity="0.7"/>
-            <line x1="96" y1="256" x2="164" y2="256" stroke="white" strokeWidth="10" opacity="0.7"/>
-            <line x1="96" y1="235" x2="164" y2="277" stroke="#c8102e" strokeWidth="4" opacity="0.8"/>
-            <line x1="164" y1="235" x2="96" y2="277" stroke="#c8102e" strokeWidth="4" opacity="0.8"/>
-            <line x1="130" y1="235" x2="130" y2="277" stroke="#c8102e" strokeWidth="6" opacity="0.8"/>
-            <line x1="96" y1="256" x2="164" y2="256" stroke="#c8102e" strokeWidth="6" opacity="0.8"/>
-            {/* Stars */}
-            <text x="14" y="20" fontSize="16" fill="rgba(255,255,255,0.5)">✦</text>
-            <text x="228" y="24" fontSize="13" fill="rgba(255,255,255,0.4)">✦</text>
-            <text x="240" y="200" fontSize="11" fill="rgba(255,255,255,0.35)">✦</text>
-          </svg>
+          <div style={{ width: 110, height: 110, borderRadius: "50%", background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 52, flexShrink: 0 }}>
+            📊
+          </div>
           <div>
-            <div style={{ color: "white", fontWeight: 800, fontSize: 14, fontFamily: "'Nunito',sans-serif", marginBottom: 4 }}>🗣️ Communication Skills</div>
-            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, marginBottom: 10 }}>PC 101 · Professional English</div>
-            {["🎧 Listening & Speaking", "📖 Grammar in context", "✍️ Academic Writing", "🌍 Intercultural Skills"].map(s => (
-              <div key={s} style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, marginBottom: 5, display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(255,255,255,0.6)", display: "inline-block", flexShrink: 0 }} />
-                {s}
+            <div style={{ color: "white", fontWeight: 800, fontSize: 14, fontFamily: "'Nunito',sans-serif", marginBottom: 4 }}>ASSESSMENT STRATEGY</div>
+            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, marginBottom: 10 }}>How you will be evaluated</div>
+            {[
+              { icon: "🗓", label: "Diagnostic", desc: "Self-assessment (Module 1)" },
+              { icon: "⭐", label: "Formative", desc: "Quizzes, micro-tasks, scenarios, peer feedback" },
+              { icon: "🏆", label: "Summative", desc: "Capstone project + Final self-assessment (Module 4)" },
+              { icon: "📈", label: "Competence Tracking", desc: "Progress dashboard across 6 competence areas" },
+            ].map(item => (
+              <div key={item.label} style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, marginBottom: 7, display: "flex", alignItems: "flex-start", gap: 6 }}>
+                <span style={{ flexShrink: 0 }}>{item.icon}</span>
+                <div>
+                  <span style={{ fontWeight: 700 }}>{item.label}:</span> {item.desc}
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Card 2 — Course Materials */}
+        {/* Card 2 — Learning Resources */}
         <div style={{ borderRadius: 16, overflow: "hidden", background: "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #6d28d9 100%)", padding: "20px", display: "flex", gap: 16, alignItems: "center", boxShadow: "0 4px 20px rgba(109,40,217,0.22)" }}>
-          {/* Card 2 illustration — open book + graduation cap */}
-          <svg width="130" height="130" viewBox="0 0 260 260" fill="none" style={{ flexShrink: 0 }}>
-            {/* Open book */}
-            <rect x="15" y="90" width="230" height="150" rx="10" fill="rgba(255,255,255,0.15)"/>
-            <rect x="15" y="90" width="113" height="150" rx="10" fill="rgba(255,255,255,0.1)"/>
-            <line x1="130" y1="90" x2="130" y2="240" stroke="rgba(255,255,255,0.3)" strokeWidth="3"/>
-            {/* Left page lines */}
-            <line x1="30" y1="118" x2="120" y2="118" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
-            <line x1="30" y1="132" x2="120" y2="132" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
-            <line x1="30" y1="146" x2="120" y2="146" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
-            <line x1="30" y1="160" x2="100" y2="160" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
-            <line x1="30" y1="174" x2="110" y2="174" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
-            <line x1="30" y1="188" x2="90" y2="188" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
-            {/* Right page text */}
-            <text x="185" y="140" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="11" fontWeight="bold" fontFamily="Georgia,serif">ENGLISH</text>
-            <text x="185" y="156" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="11" fontFamily="Georgia,serif">COURSE</text>
-            <text x="185" y="175" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="10" fontFamily="Georgia,serif">PC 101</text>
-            {/* Graduation cap */}
-            <polygon points="130,20 80,44 130,62 180,44" fill="rgba(255,255,255,0.85)"/>
-            <rect x="122" y="18" width="16" height="8" rx="3" fill="rgba(255,255,255,0.5)"/>
-            <line x1="180" y1="44" x2="185" y2="68" stroke="rgba(255,255,255,0.7)" strokeWidth="4"/>
-            <circle cx="185" cy="72" r="7" fill="rgba(255,255,255,0.7)"/>
-            {/* Spine */}
-            <rect x="15" y="90" width="8" height="150" rx="4" fill="rgba(255,255,255,0.25)"/>
-            {/* Stars */}
-            <text x="200" y="25" fontSize="15" fill="rgba(255,255,255,0.45)">✦</text>
-            <text x="18" y="72" fontSize="13" fill="rgba(255,255,255,0.35)">✦</text>
-            <text x="220" y="82" fontSize="11" fill="rgba(255,255,255,0.3)">✦</text>
-          </svg>
+          <div style={{ width: 110, height: 110, borderRadius: "50%", background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 52, flexShrink: 0 }}>
+            📚
+          </div>
           <div>
-            <div style={{ color: "white", fontWeight: 800, fontSize: 14, fontFamily: "'Nunito',sans-serif", marginBottom: 4 }}>📚 Course Materials</div>
-            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, marginBottom: 10 }}>Professional Communication</div>
-            {["📋 4 Core Modules", "🎬 Video Scenarios", "📝 Quizzes & Assignments", "🏆 Final Projects"].map(s => (
-              <div key={s} style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, marginBottom: 5, display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(255,255,255,0.6)", display: "inline-block", flexShrink: 0 }} />
-                {s}
+            <div style={{ color: "white", fontWeight: 800, fontSize: 14, fontFamily: "'Nunito',sans-serif", marginBottom: 4 }}>LEARNING RESOURCES</div>
+            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, marginBottom: 10 }}>Materials to support your learning</div>
+            {[
+              { icon: "▶", desc: "Short Video Lectures (5–15 min)" },
+              { icon: "📄", desc: "Reading & Infographics" },
+              { icon: "📋", desc: "Templates & Checklists (e.g., CCQs, feedback stems)" },
+              { icon: "📥", desc: "Downloadable materials" },
+              { icon: "🔗", desc: "External Links & Recommended Videos" },
+            ].map(item => (
+              <div key={item.desc} style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, marginBottom: 5, display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ flexShrink: 0 }}>{item.icon}</span>
+                <span>{item.desc}</span>
               </div>
             ))}
           </div>
