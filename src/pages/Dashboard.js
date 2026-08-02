@@ -2231,24 +2231,24 @@ function HomeTab({ isInstructor }) {
         </Card>
       ))}
 
-      {/* Assessment Strategy & Learning Resources */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 24 }}>
+      {/* Info Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginTop: 24 }}>
 
         {/* Card 1 — Assessment Strategy */}
-        <div style={{ borderRadius: 16, overflow: "hidden", background: "linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #4f46e5 100%)", padding: "20px", display: "flex", gap: 16, alignItems: "center", boxShadow: "0 4px 20px rgba(37,99,235,0.22)" }}>
-          <div style={{ width: 110, height: 110, borderRadius: "50%", background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 52, flexShrink: 0 }}>
+        <div style={{ borderRadius: 16, overflow: "hidden", background: "linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #4f46e5 100%)", padding: "18px", display: "flex", gap: 12, alignItems: "center", boxShadow: "0 4px 20px rgba(37,99,235,0.22)" }}>
+          <div style={{ width: 86, height: 86, borderRadius: "50%", background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, flexShrink: 0 }}>
             📊
           </div>
           <div>
-            <div style={{ color: "white", fontWeight: 800, fontSize: 14, fontFamily: "'Nunito',sans-serif", marginBottom: 4 }}>ASSESSMENT STRATEGY</div>
-            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, marginBottom: 10 }}>How you will be evaluated</div>
+            <div style={{ color: "white", fontWeight: 800, fontSize: 13, fontFamily: "'Nunito',sans-serif", marginBottom: 3 }}>ASSESSMENT STRATEGY</div>
+            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 10, marginBottom: 8 }}>How you will be evaluated</div>
             {[
               { icon: "🗓", label: "Diagnostic", desc: "Self-assessment (Module 1)" },
               { icon: "⭐", label: "Formative", desc: "Quizzes, micro-tasks, scenarios, peer feedback" },
               { icon: "🏆", label: "Summative", desc: "Capstone project + Final self-assessment (Module 4)" },
               { icon: "📈", label: "Competence Tracking", desc: "Progress dashboard across 6 competence areas" },
             ].map(item => (
-              <div key={item.label} style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, marginBottom: 7, display: "flex", alignItems: "flex-start", gap: 6 }}>
+              <div key={item.label} style={{ color: "rgba(255,255,255,0.85)", fontSize: 11, marginBottom: 5, display: "flex", alignItems: "flex-start", gap: 5 }}>
                 <span style={{ flexShrink: 0 }}>{item.icon}</span>
                 <div>
                   <span style={{ fontWeight: 700 }}>{item.label}:</span> {item.desc}
@@ -2259,13 +2259,13 @@ function HomeTab({ isInstructor }) {
         </div>
 
         {/* Card 2 — Learning Resources */}
-        <div style={{ borderRadius: 16, overflow: "hidden", background: "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #6d28d9 100%)", padding: "20px", display: "flex", gap: 16, alignItems: "center", boxShadow: "0 4px 20px rgba(109,40,217,0.22)" }}>
-          <div style={{ width: 110, height: 110, borderRadius: "50%", background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 52, flexShrink: 0 }}>
+        <div style={{ borderRadius: 16, overflow: "hidden", background: "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #6d28d9 100%)", padding: "18px", display: "flex", gap: 12, alignItems: "center", boxShadow: "0 4px 20px rgba(109,40,217,0.22)" }}>
+          <div style={{ width: 86, height: 86, borderRadius: "50%", background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, flexShrink: 0 }}>
             📚
           </div>
           <div>
-            <div style={{ color: "white", fontWeight: 800, fontSize: 14, fontFamily: "'Nunito',sans-serif", marginBottom: 4 }}>LEARNING RESOURCES</div>
-            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, marginBottom: 10 }}>Materials to support your learning</div>
+            <div style={{ color: "white", fontWeight: 800, fontSize: 13, fontFamily: "'Nunito',sans-serif", marginBottom: 3 }}>LEARNING RESOURCES</div>
+            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 10, marginBottom: 8 }}>Materials to support your learning</div>
             {[
               { icon: "▶", desc: "Short Video Lectures (5–15 min)" },
               { icon: "📄", desc: "Reading & Infographics" },
@@ -2273,7 +2273,30 @@ function HomeTab({ isInstructor }) {
               { icon: "📥", desc: "Downloadable materials" },
               { icon: "🔗", desc: "External Links & Recommended Videos" },
             ].map(item => (
-              <div key={item.desc} style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, marginBottom: 5, display: "flex", alignItems: "center", gap: 6 }}>
+              <div key={item.desc} style={{ color: "rgba(255,255,255,0.85)", fontSize: 11, marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
+                <span style={{ flexShrink: 0 }}>{item.icon}</span>
+                <span>{item.desc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Card 3 — Learner Support */}
+        <div style={{ borderRadius: 16, overflow: "hidden", background: "linear-gradient(135deg, #065f46 0%, #059669 60%, #0d9488 100%)", padding: "18px", display: "flex", gap: 12, alignItems: "center", boxShadow: "0 4px 20px rgba(5,150,105,0.22)" }}>
+          <div style={{ width: 86, height: 86, borderRadius: "50%", background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, flexShrink: 0 }}>
+            🎧
+          </div>
+          <div>
+            <div style={{ color: "white", fontWeight: 800, fontSize: 13, fontFamily: "'Nunito',sans-serif", marginBottom: 3 }}>LEARNER SUPPORT</div>
+            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 10, marginBottom: 8 }}>Help and guidance throughout the course</div>
+            {[
+              { icon: "💬", desc: "Discussion Forums" },
+              { icon: "👤", desc: "Peer Feedback" },
+              { icon: "🎓", desc: "Instructor Feedback" },
+              { icon: "❓", desc: "FAQ & Help Center" },
+              { icon: "📅", desc: "Study Guide & Weekly Roadmaps" },
+            ].map(item => (
+              <div key={item.desc} style={{ color: "rgba(255,255,255,0.85)", fontSize: 11, marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
                 <span style={{ flexShrink: 0 }}>{item.icon}</span>
                 <span>{item.desc}</span>
               </div>
