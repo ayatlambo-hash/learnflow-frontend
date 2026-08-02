@@ -966,7 +966,7 @@ function ModulesTab({ isInstructor }) {
 
   const saveModule = async () => {
     if (!modForm.title) return;
-    const r = await api.post("/modules", { title: modForm.title, description: modForm.desc, color: modForm.color || T.primary, icon: "📖", status: "published" });
+    const r = await api.post("/modules", { title: modForm.title, description: modForm.desc, key_topics: modForm.key_topics, color: modForm.color || T.primary, icon: "📖", status: "published" });
     setModules(m => [...m, { ...r.data, progress: 0, lesson_count: 0 }]);
     setModForm({}); setAddingMod(false);
   };
@@ -1085,7 +1085,25 @@ function ModulesTab({ isInstructor }) {
             <div style={{ width: 52, height: 52, borderRadius: 12, background: "rgba(255,255,255,0.18)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>�</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 800, fontSize: 19, marginBottom: 3, fontFamily: "'Nunito',sans-serif" }}>{openMod.title}</div>
-              <div style={{ opacity: 0.8, fontSize: 13, marginBottom: 16 }}>{openMod.description}</div>
+              {openMod.description && (
+                <div style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 10, padding: "10px 14px", marginBottom: 12, backdropFilter: "blur(4px)" }}>
+                  <div style={{ fontSize: 11, opacity: 0.85, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Focus</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4 }}>{openMod.description}</div>
+                </div>
+              )}
+              {openMod.key_topics && (
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 11, opacity: 0.85, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Key Topics</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                    {openMod.key_topics.split(/\n|\\n/).filter(t => t.trim()).map((topic, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, fontWeight: 600 }}>
+                        <span style={{ flexShrink: 0, width: 18, height: 18, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>{i + 1}</span>
+                        <span style={{ opacity: 0.95 }}>{topic.trim()}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Progress Widget */}
               <div style={{ background: "rgba(255,255,255,0.13)", borderRadius: 10, padding: "12px 16px", marginBottom: 14, backdropFilter: "blur(4px)" }}>
@@ -1285,12 +1303,16 @@ function ModulesTab({ isInstructor }) {
     <div>
       {addingMod && (
         <Modal onClose={() => setAddingMod(false)} title="New Module">
-          {[["title", "Module Title", "e.g. Module 1"], ["desc", "Description", "Brief description..."]].map(([k, l, p]) => (
+          {[["title", "Module Title", "e.g. Module 1"], ["desc", "Focus", "Module focus..."]].map(([k, l, p]) => (
             <div key={k} style={{ marginBottom: 12 }}>
               <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>{l}</div>
               <input value={modForm[k] || ""} onChange={e => setModForm(f => ({ ...f, [k]: e.target.value }))} placeholder={p} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
             </div>
           ))}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Key Topics</div>
+            <textarea value={modForm.key_topics || ""} onChange={e => setModForm(f => ({ ...f, key_topics: e.target.value }))} placeholder="One topic per line" rows={4} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box", resize: "vertical" }} />
+          </div>
           <div style={{ marginBottom: 20 }}>
             <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Color</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
