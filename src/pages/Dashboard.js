@@ -1617,7 +1617,8 @@ function ForumTab({ user }) {
       {composing && (
         <Card style={{ marginBottom: 16 }}>
           <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Post title..." style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", marginBottom: 10, fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
-          <textarea value={newBody} onChange={e => setNewBody(e.target.value)} placeholder="Write your message..." rows={3} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", resize: "vertical", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
+          <textarea value={newBody} onChange={e => setNewBody(e.target.value)} placeholder="Write your message..." rows={6} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", resize: "vertical", fontFamily: "'Inter',sans-serif", boxSizing: "border-box", whiteSpace: "pre-wrap" }} />
+          <div style={{ color: T.text3, fontSize: 11, marginTop: 6 }}>Tip: use line breaks and bullet points to format your post.</div>
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
             <Btn onClick={submit} color={T.green} small>Post</Btn>
             <Btn onClick={() => setComposing(false)} color={T.text3} outline small>Cancel</Btn>
@@ -1635,7 +1636,7 @@ function ForumTab({ user }) {
             </div>
           </div>
           <div style={{ fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 6 }}>{p.title}</div>
-          <div style={{ color: T.text2, fontSize: 13, lineHeight: 1.6, marginBottom: 10 }}>{p.body}</div>
+          <div style={{ color: T.text2, fontSize: 13, lineHeight: 1.6, marginBottom: 10, whiteSpace: "pre-wrap" }}>{p.body}</div>
           <div style={{ color: T.text3, fontSize: 12 }}>💬 {p.reply_count} replies</div>
         </Card>
       ))}
