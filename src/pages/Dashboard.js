@@ -978,13 +978,27 @@ function ModulesTab({ isInstructor }) {
       const d = new Date(lesForm.deadline);
       if (!isNaN(d.getTime())) deadline = d.toISOString().split('T')[0];
     }
-    const r = await api.post(`/modules/${openMod.id}/lessons`, {
-      title: lesForm.title, type: lesForm.type || "video",
-      video_url: lesForm.url, duration: lesForm.dur,
-      pages: lesForm.pages, deadline, order_index: lessons.length
-    });
-    setLessons(ls => [...ls, { ...r.data, done: false, questions: [] }]);
-    setLesForm({}); setAddingLesson(false);
+    const payload = {
+      title: lesForm.title,
+      type: lesForm.type || "video",
+      duration: lesForm.dur,
+      pages: lesForm.pages,
+      deadline,
+      order_index: lessons.length
+    };
+    if (lesForm.type === "quiz") {
+      payload.form_url = lesForm.url;
+    } else {
+      payload.video_url = lesForm.url;
+    }
+    try {
+      const r = await api.post(`/modules/${openMod.id}/lessons`, payload);
+      setLessons(ls => [...ls, { ...r.data, done: false, questions: [] }]);
+      setLesForm({}); setAddingLesson(false);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Failed to save lesson. Please check the URL and deadline.");
+    }
   };
 
   const clearAllLessons = async () => {
