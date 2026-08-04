@@ -1601,12 +1601,30 @@ function ForumTab({ user }) {
   const [composing, setComposing] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newBody, setNewBody] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
   useEffect(() => { api.get("/forum").then(r => setPosts(r.data)); }, []);
   const submit = async () => {
     if (!newTitle.trim()) return;
     const r = await api.post("/forum", { title: newTitle, body: newBody });
     setPosts(p => [r.data, ...p]);
     setNewTitle(""); setNewBody(""); setComposing(false);
+  };
+  const startEdit = (p) => {
+    setEditingId(p.id); setEditTitle(p.title); setEditBody(p.body || "");
+  };
+  const cancelEdit = () => { setEditingId(null); setEditTitle(""); setEditBody(""); };
+  const saveEdit = async (id) => {
+    if (!editTitle.trim()) return;
+    const r = await api.put(`/forum/${id}`, { title: editTitle, body: editBody });
+    setPosts(ps => ps.map(p => p.id === id ? { ...p, ...r.data } : p));
+    cancelEdit();
+  };
+  const deletePost = async (id) => {
+    if (!window.confirm("Delete this post?")) return;
+    await api.delete(`/forum/${id}`);
+    setPosts(ps => ps.filter(p => p.id !== id));
   };
   return (
     <div>
@@ -1625,21 +1643,46 @@ function ForumTab({ user }) {
           </div>
         </Card>
       )}
-      {posts.map(p => (
-        <Card key={p.id} style={{ marginBottom: 10 }}>
-          {p.pinned && <div style={{ color: T.primary, fontSize: 11, fontWeight: 600, marginBottom: 8 }}>📌 Pinned</div>}
-          <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
-            <Av name={p.author_name} color={p.avatar_color || T.primary} size={30} />
-            <div>
-              <span style={{ color: T.text2, fontSize: 13, fontWeight: 600 }}>{p.author_name}</span>
-              <span style={{ color: T.text3, fontSize: 11, marginLeft: 8 }}>{new Date(p.created_at).toLocaleDateString()}</span>
+      {posts.map(p => {
+        const canEdit = user && (user.id === p.user_id || user.role === "instructor");
+        const isEditing = editingId === p.id;
+        return (
+          <Card key={p.id} style={{ marginBottom: 10 }}>
+            {p.pinned && <div style={{ color: T.primary, fontSize: 11, fontWeight: 600, marginBottom: 8 }}>📌 Pinned</div>}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
+                <Av name={p.author_name} color={p.avatar_color || T.primary} size={30} />
+                <div>
+                  <span style={{ color: T.text2, fontSize: 13, fontWeight: 600 }}>{p.author_name}</span>
+                  <span style={{ color: T.text3, fontSize: 11, marginLeft: 8 }}>{new Date(p.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+              {canEdit && !isEditing && (
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button onClick={() => startEdit(p)} style={{ background: "none", border: "none", color: T.primary, cursor: "pointer", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>Edit</button>
+                  <button onClick={() => deletePost(p.id)} style={{ background: "none", border: "none", color: T.red, cursor: "pointer", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>Delete</button>
+                </div>
+              )}
             </div>
-          </div>
-          <div style={{ fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 6 }}>{p.title}</div>
-          <div style={{ color: T.text2, fontSize: 13, lineHeight: 1.6, marginBottom: 10, whiteSpace: "pre-wrap" }}>{p.body}</div>
-          <div style={{ color: T.text3, fontSize: 12 }}>💬 {p.reply_count} replies</div>
-        </Card>
-      ))}
+            {isEditing ? (
+              <div>
+                <input value={editTitle} onChange={e => setEditTitle(e.target.value)} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", marginBottom: 10, fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
+                <textarea value={editBody} onChange={e => setEditBody(e.target.value)} rows={6} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", resize: "vertical", fontFamily: "'Inter',sans-serif", boxSizing: "border-box", whiteSpace: "pre-wrap" }} />
+                <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                  <Btn onClick={() => saveEdit(p.id)} color={T.green} small>Save</Btn>
+                  <Btn onClick={cancelEdit} color={T.text3} outline small>Cancel</Btn>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div style={{ fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 6 }}>{p.title}</div>
+                <div style={{ color: T.text2, fontSize: 13, lineHeight: 1.6, marginBottom: 10, whiteSpace: "pre-wrap" }}>{p.body}</div>
+                <div style={{ color: T.text3, fontSize: 12 }}>💬 {p.reply_count} replies</div>
+              </>
+            )}
+          </Card>
+        );
+      })}
     </div>
   );
 }
