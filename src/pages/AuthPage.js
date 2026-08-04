@@ -108,7 +108,7 @@ export default function AuthPage() {
         navigate('/');
       } else {
         await register(name, email, password, role);
-        setVerifying(true);
+        navigate('/');
       }
     } catch (err) {
       const msg = err.response?.data?.error;
