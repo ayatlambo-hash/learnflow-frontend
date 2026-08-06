@@ -931,7 +931,9 @@ function ModulesTab({ isInstructor }) {
   const [activeLessonIdx, setActiveLessonIdx] = useState(null);
   const [loading, setLoading] = useState(true);
   const [addingMod, setAddingMod] = useState(false);
+  const [editingMod, setEditingMod] = useState(null);
   const [addingLesson, setAddingLesson] = useState(false);
+  const [editingLesson, setEditingLesson] = useState(null);
   const [modForm, setModForm] = useState({});
   const [lesForm, setLesForm] = useState({});
 
@@ -941,6 +943,37 @@ function ModulesTab({ isInstructor }) {
     setOpenMod(mod);
     const r = await api.get(`/modules/${mod.id}/lessons`);
     setLessons(r.data);
+  };
+
+  const startEditModule = (mod, e) => {
+    e.stopPropagation();
+    setEditingMod(mod);
+    setModForm({ title: mod.title, desc: mod.description, key_topics: mod.key_topics, color: mod.color });
+    setAddingMod(true);
+  };
+
+  const deleteModule = async (modId, e) => {
+    e.stopPropagation();
+    if (!window.confirm("Delete this module and all its lessons? This cannot be undone.")) return;
+    await api.delete(`/modules/${modId}`);
+    setModules(ms => ms.filter(m => m.id !== modId));
+  };
+
+  const startEditLesson = (lesson, e) => {
+    e.stopPropagation();
+    setEditingLesson(lesson);
+    setLesForm({
+      title: lesson.title, type: lesson.type, dur: lesson.duration,
+      deadline: lesson.deadline, url: lesson.type === "quiz" ? lesson.form_url : lesson.video_url,
+    });
+    setAddingLesson(true);
+  };
+
+  const deleteLesson = async (lessonId, e) => {
+    e.stopPropagation();
+    if (!window.confirm("Delete this lesson?")) return;
+    await api.delete(`/modules/${openMod.id}/lessons/${lessonId}`);
+    setLessons(ls => ls.filter(l => l.id !== lessonId));
   };
 
   const markDone = async (lessonId, score) => {
@@ -966,9 +999,15 @@ function ModulesTab({ isInstructor }) {
 
   const saveModule = async () => {
     if (!modForm.title) return;
-    const r = await api.post("/modules", { title: modForm.title, description: modForm.desc, key_topics: modForm.key_topics, color: modForm.color || T.primary, icon: "📖", status: "published" });
-    setModules(m => [...m, { ...r.data, progress: 0, lesson_count: 0 }]);
-    setModForm({}); setAddingMod(false);
+    const payload = { title: modForm.title, description: modForm.desc, key_topics: modForm.key_topics, color: modForm.color || T.primary, icon: "📖", status: "published" };
+    if (editingMod) {
+      const r = await api.put(`/modules/${editingMod.id}`, payload);
+      setModules(ms => ms.map(m => m.id === editingMod.id ? { ...m, ...r.data } : m));
+    } else {
+      const r = await api.post("/modules", payload);
+      setModules(m => [...m, { ...r.data, progress: 0, lesson_count: 0 }]);
+    }
+    setModForm({}); setAddingMod(false); setEditingMod(null);
   };
 
   const saveLesson = async () => {
@@ -992,9 +1031,14 @@ function ModulesTab({ isInstructor }) {
       payload.video_url = lesForm.url;
     }
     try {
-      const r = await api.post(`/modules/${openMod.id}/lessons`, payload);
-      setLessons(ls => [...ls, { ...r.data, done: false, questions: [] }]);
-      setLesForm({}); setAddingLesson(false);
+      if (editingLesson) {
+        const r = await api.put(`/modules/${openMod.id}/lessons/${editingLesson.id}`, payload);
+        setLessons(ls => ls.map(l => l.id === editingLesson.id ? { ...l, ...r.data } : l));
+      } else {
+        const r = await api.post(`/modules/${openMod.id}/lessons`, payload);
+        setLessons(ls => [...ls, { ...r.data, done: false, questions: [] }]);
+      }
+      setLesForm({}); setAddingLesson(false); setEditingLesson(null);
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Failed to save lesson. Please check the URL and deadline.");
@@ -1064,7 +1108,7 @@ function ModulesTab({ isInstructor }) {
         {activeLesson?.type === "quiz" && !isInstructor && <QuizModal lesson={activeLesson} onClose={() => setActiveLesson(null)} onComplete={score => { markDone(activeLesson.id, score); goNext(); }} lessons={lessons} activeLessonIdx={activeLessonIdx} />}
         {activeLesson?.type === "assignment" && !isInstructor && <UploadModal lesson={activeLesson} onClose={() => setActiveLesson(null)} onComplete={() => { markDone(activeLesson.id); goNext(); }} lessons={lessons} activeLessonIdx={activeLessonIdx} />}
         {addingLesson && (
-          <Modal onClose={() => setAddingLesson(false)} title="Add Lesson">
+          <Modal onClose={() => { setAddingLesson(false); setEditingLesson(null); setLesForm({}); }} title={editingLesson ? "Edit Lesson" : "Add Lesson"}>
             <div style={{ marginBottom: 14 }}>
               <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Type</div>
               <div style={{ display: "flex", gap: 8 }}>
@@ -1086,7 +1130,7 @@ function ModulesTab({ isInstructor }) {
                 <input value={lesForm[k] || ""} onChange={e => setLesForm(f => ({ ...f, [k]: e.target.value }))} placeholder={p} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
               </div>
             ))}
-            <Btn onClick={saveLesson} color={T.green}>Save Lesson</Btn>
+            <Btn onClick={saveLesson} color={T.green}>{editingLesson ? "Save Changes" : "Save Lesson"}</Btn>
           </Modal>
         )}
 
@@ -1155,7 +1199,7 @@ function ModulesTab({ isInstructor }) {
 
         {isInstructor && (
           <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-            <Btn onClick={() => setAddingLesson(true)} color={T.primary}>+ Add Lesson</Btn>
+            <Btn onClick={() => { setEditingLesson(null); setLesForm({}); setAddingLesson(true); }} color={T.primary}>+ Add Lesson</Btn>
             <Btn onClick={clearAllLessons} color={T.red}>⚠ Clear All Lessons</Btn>
           </div>
         )}
@@ -1189,6 +1233,12 @@ function ModulesTab({ isInstructor }) {
                   {lesson.score != null && <span style={{ color: T.green, fontSize: 11, fontWeight: 600 }}>★ {lesson.score}%</span>}
                 </div>
               </div>
+              {isInstructor && (
+                <div style={{ display: "flex", gap: 4 }}>
+                  <button onClick={e => startEditLesson(lesson, e)} title="Edit lesson" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, color: T.text2, cursor: "pointer", padding: "5px 8px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>✎</button>
+                  <button onClick={e => deleteLesson(lesson.id, e)} title="Delete lesson" style={{ background: "#fee2e2", border: "none", borderRadius: 6, color: T.red, cursor: "pointer", padding: "5px 8px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>✕</button>
+                </div>
+              )}
               {lesson.done
                 ? <span style={{ color: T.green, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>✓ Done</span>
                 : lesson.type !== "reading" && (
@@ -1316,7 +1366,7 @@ function ModulesTab({ isInstructor }) {
   return (
     <div>
       {addingMod && (
-        <Modal onClose={() => setAddingMod(false)} title="New Module">
+        <Modal onClose={() => { setAddingMod(false); setEditingMod(null); setModForm({}); }} title={editingMod ? "Edit Module" : "New Module"}>
           {[["title", "Module Title", "e.g. Module 1"], ["desc", "Focus", "Module focus..."]].map(([k, l, p]) => (
             <div key={k} style={{ marginBottom: 12 }}>
               <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>{l}</div>
@@ -1333,10 +1383,10 @@ function ModulesTab({ isInstructor }) {
               {COLORS.map(c => <button key={c} onClick={() => setModForm(f => ({ ...f, color: c }))} style={{ width: 28, height: 28, borderRadius: "50%", background: c, border: modForm.color === c ? `3px solid ${T.text}` : "3px solid transparent", cursor: "pointer" }} />)}
             </div>
           </div>
-          <Btn onClick={saveModule} color={T.green}>Create Module</Btn>
+          <Btn onClick={saveModule} color={T.green}>{editingMod ? "Save Changes" : "Create Module"}</Btn>
         </Modal>
       )}
-      {isInstructor && <div style={{ marginBottom: 20 }}><Btn onClick={() => setAddingMod(true)}>+ New Module</Btn></div>}
+      {isInstructor && <div style={{ marginBottom: 20 }}><Btn onClick={() => { setEditingMod(null); setModForm({}); setAddingMod(true); }}>+ New Module</Btn></div>}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 14 }}>
         {modules.map((m, idx) => {
           const mcBg = getModuleCardBg(m.title, idx);
@@ -1352,7 +1402,15 @@ function ModulesTab({ isInstructor }) {
               </div>
             </div>
             <div style={{ padding: "14px 16px" }}>
-              <div style={{ fontWeight: 600, fontSize: 13, color: T.text, marginBottom: 10 }}>{m.title}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 10 }}>
+                <div style={{ fontWeight: 600, fontSize: 13, color: T.text }}>{m.title}</div>
+                {isInstructor && (
+                  <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                    <button onClick={e => startEditModule(m, e)} title="Edit module" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, color: T.text2, cursor: "pointer", padding: "4px 7px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>✎</button>
+                    <button onClick={e => deleteModule(m.id, e)} title="Delete module" style={{ background: "#fee2e2", border: "none", borderRadius: 6, color: T.red, cursor: "pointer", padding: "4px 7px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>✕</button>
+                  </div>
+                )}
+              </div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                 <span style={{ color: T.text3, fontSize: 12 }}>Course completion</span>
                 <span style={{ color: T.primary, fontSize: 12, fontWeight: 700 }}>{m.progress || 0}%</span>
@@ -1894,6 +1952,8 @@ function ResourcesTab({ isInstructor }) {
   const [form, setForm] = useState({});
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [editingRes, setEditingRes] = useState(null);
+  const [editForm, setEditForm] = useState({});
   const fileRef = useRef();
 
   const load = () => {
@@ -1924,6 +1984,18 @@ function ResourcesTab({ isInstructor }) {
     if (!window.confirm("Delete this resource?")) return;
     await api.delete(`/resources/${id}`);
     setResources(r => r.filter(x => x.id !== id));
+  };
+
+  const startEditResource = (r) => {
+    setEditingRes(r);
+    setEditForm({ title: r.title, description: r.description || "", url: r.url || "" });
+  };
+
+  const saveEditResource = async () => {
+    if (!editForm.title?.trim()) return;
+    const res = await api.put(`/resources/${editingRes.id}`, editForm);
+    setResources(rs => rs.map(r => r.id === editingRes.id ? { ...r, ...res.data } : r));
+    setEditingRes(null); setEditForm({});
   };
 
   const grouped = { reading: resources.filter(r => r.type === "reading" || r.type === "file"), links: resources.filter(r => r.type === "link") };
@@ -2014,6 +2086,7 @@ function ResourcesTab({ isInstructor }) {
               {r.file_path && (
                 <a href={`${process.env.REACT_APP_API_URL || '/api'}/resources/file/${r.file_path}`} target="_blank" rel="noopener noreferrer" style={{ background: T.primary + "14", color: T.primary, border: `1px solid ${T.primary}33`, borderRadius: 6, padding: "5px 12px", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>Download</a>
               )}
+              {isInstructor && <button onClick={() => startEditResource(r)} style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, color: T.text2, cursor: "pointer", padding: "5px 10px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>Edit</button>}
               {isInstructor && <button onClick={() => deleteResource(r.id)} style={{ background: "#fee2e2", border: "none", borderRadius: 6, color: T.red, cursor: "pointer", padding: "5px 10px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>✕</button>}
             </div>
           </div>
@@ -2038,11 +2111,32 @@ function ResourcesTab({ isInstructor }) {
               {r.url && (
                 <a href={r.url} target="_blank" rel="noopener noreferrer" style={{ background: T.green + "14", color: T.green, border: `1px solid ${T.green}33`, borderRadius: 6, padding: "5px 12px", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>Open →</a>
               )}
+              {isInstructor && <button onClick={() => startEditResource(r)} style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, color: T.text2, cursor: "pointer", padding: "5px 10px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>Edit</button>}
               {isInstructor && <button onClick={() => deleteResource(r.id)} style={{ background: "#fee2e2", border: "none", borderRadius: 6, color: T.red, cursor: "pointer", padding: "5px 10px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>✕</button>}
             </div>
           </div>
         ))}
       </div>
+
+      {editingRes && (
+        <Modal onClose={() => { setEditingRes(null); setEditForm({}); }} title="Edit Resource">
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Title</div>
+            <input value={editForm.title || ""} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Description</div>
+            <textarea value={editForm.description || ""} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} rows={3} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", resize: "vertical", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
+          </div>
+          {editingRes.type === "link" && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>URL</div>
+              <input value={editForm.url || ""} onChange={e => setEditForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
+            </div>
+          )}
+          <Btn onClick={saveEditResource} color={T.green}>Save Changes</Btn>
+        </Modal>
+      )}
     </div>
   );
 }
@@ -2070,6 +2164,7 @@ function HomeTab({ isInstructor }) {
   const [announcements, setAnnouncements] = useState([]);
   const [showAnnounce, setShowAnnounce] = useState(false);
   const [annForm, setAnnForm] = useState({});
+  const [editingAnn, setEditingAnn] = useState(null);
   const { user } = useAuth();
 
   const loadAnnouncements = () => api.get("/announcements").then(r => setAnnouncements(r.data));
@@ -2081,9 +2176,19 @@ function HomeTab({ isInstructor }) {
 
   const postAnnouncement = async () => {
     if (!annForm.title) return;
-    await api.post("/announcements", annForm);
+    if (editingAnn) {
+      await api.put(`/announcements/${editingAnn.id}`, annForm);
+    } else {
+      await api.post("/announcements", annForm);
+    }
     loadAnnouncements();
-    setShowAnnounce(false); setAnnForm({});
+    setShowAnnounce(false); setAnnForm({}); setEditingAnn(null);
+  };
+
+  const startEditAnnouncement = (a) => {
+    setEditingAnn(a);
+    setAnnForm({ title: a.title, body: a.body || "", type: a.type });
+    setShowAnnounce(true);
   };
 
   const deleteAnnouncement = async (id) => {
@@ -2246,7 +2351,7 @@ function HomeTab({ isInstructor }) {
       </div>
 
       {showAnnounce && (
-        <Modal onClose={() => { setShowAnnounce(false); setAnnForm({}); }} title="New Announcement">
+        <Modal onClose={() => { setShowAnnounce(false); setAnnForm({}); setEditingAnn(null); }} title={editingAnn ? "Edit Announcement" : "New Announcement"}>
           <div style={{ marginBottom: 12 }}>
             <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Title</div>
             <input value={annForm.title || ""} onChange={e => setAnnForm(f => ({ ...f, title: e.target.value }))} placeholder="Announcement title" style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
@@ -2265,12 +2370,12 @@ function HomeTab({ isInstructor }) {
               ))}
             </div>
           </div>
-          <Btn onClick={postAnnouncement} color={T.green} disabled={!annForm.title}>Post Announcement</Btn>
+          <Btn onClick={postAnnouncement} color={T.green} disabled={!annForm.title}>{editingAnn ? "Save Changes" : "Post Announcement"}</Btn>
         </Modal>
       )}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <div style={{ fontWeight: 700, fontSize: 15, color: T.text }}>Announcements</div>
-        {isInstructor && <Btn onClick={() => setShowAnnounce(true)} small>+ Announce</Btn>}
+        {isInstructor && <Btn onClick={() => { setEditingAnn(null); setAnnForm({}); setShowAnnounce(true); }} small>+ Announce</Btn>}
       </div>
       {announcements.length === 0 && <div style={{ color: T.text3, fontSize: 13, marginBottom: 20 }}>No announcements yet.</div>}
       {announcements.map(a => (
@@ -2284,7 +2389,12 @@ function HomeTab({ isInstructor }) {
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
             <div style={{ color: T.text3, fontSize: 11, whiteSpace: "nowrap" }}>{new Date(a.created_at).toLocaleDateString()}</div>
-            {isInstructor && <button onClick={() => deleteAnnouncement(a.id)} style={{ background: "#fee2e2", border: "none", borderRadius: 6, color: T.red, cursor: "pointer", padding: "3px 8px", fontSize: 11, fontFamily: "'Inter',sans-serif" }}>✕</button>}
+            {isInstructor && (
+              <div style={{ display: "flex", gap: 4 }}>
+                <button onClick={() => startEditAnnouncement(a)} style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, color: T.text2, cursor: "pointer", padding: "3px 8px", fontSize: 11, fontFamily: "'Inter',sans-serif" }}>Edit</button>
+                <button onClick={() => deleteAnnouncement(a.id)} style={{ background: "#fee2e2", border: "none", borderRadius: 6, color: T.red, cursor: "pointer", padding: "3px 8px", fontSize: 11, fontFamily: "'Inter',sans-serif" }}>✕</button>
+              </div>
+            )}
           </div>
         </Card>
       ))}
