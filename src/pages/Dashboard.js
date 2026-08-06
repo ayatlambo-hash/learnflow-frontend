@@ -976,6 +976,38 @@ function ModulesTab({ isInstructor }) {
     setLessons(ls => ls.filter(l => l.id !== lessonId));
   };
 
+  const moveModule = async (idx, dir, e) => {
+    e.stopPropagation();
+    const other = idx + dir;
+    if (other < 0 || other >= modules.length) return;
+    const a = modules[idx], b = modules[other];
+    await Promise.all([
+      api.patch(`/modules/${a.id}/order`, { order_index: other }),
+      api.patch(`/modules/${b.id}/order`, { order_index: idx }),
+    ]);
+    setModules(ms => {
+      const copy = [...ms];
+      [copy[idx], copy[other]] = [{ ...copy[other], order_index: idx }, { ...copy[idx], order_index: other }];
+      return copy;
+    });
+  };
+
+  const moveLesson = async (idx, dir, e) => {
+    e.stopPropagation();
+    const other = idx + dir;
+    if (other < 0 || other >= lessons.length) return;
+    const a = lessons[idx], b = lessons[other];
+    await Promise.all([
+      api.patch(`/modules/${openMod.id}/lessons/${a.id}/order`, { order_index: other }),
+      api.patch(`/modules/${openMod.id}/lessons/${b.id}/order`, { order_index: idx }),
+    ]);
+    setLessons(ls => {
+      const copy = [...ls];
+      [copy[idx], copy[other]] = [{ ...copy[other], order_index: idx }, { ...copy[idx], order_index: other }];
+      return copy;
+    });
+  };
+
   const markDone = async (lessonId, score) => {
     await api.post(`/modules/progress/${lessonId}`, { score });
     setLessons(ls => ls.map(l => l.id === lessonId ? { ...l, done: true, score } : l));
@@ -1235,6 +1267,8 @@ function ModulesTab({ isInstructor }) {
               </div>
               {isInstructor && (
                 <div style={{ display: "flex", gap: 4 }}>
+                  <button onClick={e => moveLesson(i, -1, e)} disabled={i === 0} title="Move up" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, color: i === 0 ? T.text3 : T.text2, cursor: i === 0 ? "default" : "pointer", padding: "5px 8px", fontSize: 12, fontFamily: "'Inter',sans-serif", opacity: i === 0 ? 0.5 : 1 }}>↑</button>
+                  <button onClick={e => moveLesson(i, 1, e)} disabled={i === lessons.length - 1} title="Move down" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, color: i === lessons.length - 1 ? T.text3 : T.text2, cursor: i === lessons.length - 1 ? "default" : "pointer", padding: "5px 8px", fontSize: 12, fontFamily: "'Inter',sans-serif", opacity: i === lessons.length - 1 ? 0.5 : 1 }}>↓</button>
                   <button onClick={e => startEditLesson(lesson, e)} title="Edit lesson" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, color: T.text2, cursor: "pointer", padding: "5px 8px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>✎</button>
                   <button onClick={e => deleteLesson(lesson.id, e)} title="Delete lesson" style={{ background: "#fee2e2", border: "none", borderRadius: 6, color: T.red, cursor: "pointer", padding: "5px 8px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>✕</button>
                 </div>
@@ -1406,6 +1440,8 @@ function ModulesTab({ isInstructor }) {
                 <div style={{ fontWeight: 600, fontSize: 13, color: T.text }}>{m.title}</div>
                 {isInstructor && (
                   <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                    <button onClick={e => moveModule(idx, -1, e)} disabled={idx === 0} title="Move up" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, color: idx === 0 ? T.text3 : T.text2, cursor: idx === 0 ? "default" : "pointer", padding: "4px 7px", fontSize: 12, fontFamily: "'Inter',sans-serif", opacity: idx === 0 ? 0.5 : 1 }}>↑</button>
+                    <button onClick={e => moveModule(idx, 1, e)} disabled={idx === modules.length - 1} title="Move down" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, color: idx === modules.length - 1 ? T.text3 : T.text2, cursor: idx === modules.length - 1 ? "default" : "pointer", padding: "4px 7px", fontSize: 12, fontFamily: "'Inter',sans-serif", opacity: idx === modules.length - 1 ? 0.5 : 1 }}>↓</button>
                     <button onClick={e => startEditModule(m, e)} title="Edit module" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, color: T.text2, cursor: "pointer", padding: "4px 7px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>✎</button>
                     <button onClick={e => deleteModule(m.id, e)} title="Delete module" style={{ background: "#fee2e2", border: "none", borderRadius: 6, color: T.red, cursor: "pointer", padding: "4px 7px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>✕</button>
                   </div>
