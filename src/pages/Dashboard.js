@@ -466,6 +466,8 @@ function LessonUploadModal({ lesson, modId, isInstructor, onClose }) {
   const [uploading, setUploading] = useState(false);
   const [done, setDone] = useState(false);
   const [existing, setExisting] = useState([]);
+  const [instructions, setInstructions] = useState(lesson.instructions || "");
+  const [savingIntro, setSavingIntro] = useState(false);
   const ref = useRef();
 
   useEffect(() => {
@@ -484,6 +486,16 @@ function LessonUploadModal({ lesson, modId, isInstructor, onClose }) {
     } catch (e) { alert("Upload failed: " + e.message); }
     finally { setUploading(false); }
   };
+
+  const saveIntro = async () => {
+    setSavingIntro(true);
+    try {
+      await api.patch(`/modules/lessons/${lesson.id}`, { instructions });
+    } catch { alert("Failed to save intro text."); }
+    finally { setSavingIntro(false); }
+  };
+
+  const isImage = (f) => (f.mime_type || "").startsWith("image/");
 
   const typeConfig = {
     video: { icon: "▶", color: T.primary }, quiz: { icon: "📋", color: "#7c3aed" },
@@ -531,18 +543,28 @@ function LessonUploadModal({ lesson, modId, isInstructor, onClose }) {
               <a href={lesson.form_url} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 12, fontWeight: 600 }}>Open quiz form →</a>
             </div>
           )}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontWeight: 600, fontSize: 12, color: T.text2, marginBottom: 8 }}>Intro text (shown to students before the materials below):</div>
+            <textarea value={instructions} onChange={e => setInstructions(e.target.value)} placeholder="Write some intro information for students..." rows={4} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box", resize: "vertical", marginBottom: 8 }} />
+            <Btn onClick={saveIntro} small disabled={savingIntro}>{savingIntro ? "Saving..." : "Save Intro Text"}</Btn>
+          </div>
           {existing.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontWeight: 600, fontSize: 12, color: T.text2, marginBottom: 8 }}>Already uploaded:</div>
               {existing.map((f, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "7px 12px", marginBottom: 5 }}>
-                  <span style={{ color: T.text2, fontSize: 12 }}>📄 {f.file_name}</span>
-                  <a href={`${process.env.REACT_APP_API_URL || "/api"}/upload/file/${f.file_path}`} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 11, fontWeight: 600, textDecoration: "none" }}>View</a>
+                <div key={i} style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "7px 12px", marginBottom: 5 }}>
+                  {isImage(f) && (
+                    <img src={`${process.env.REACT_APP_API_URL || "/api"}/upload/file/${f.file_path}`} alt={f.file_name} style={{ maxWidth: "100%", borderRadius: 6, marginBottom: 6, display: "block" }} />
+                  )}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ color: T.text2, fontSize: 12 }}>{isImage(f) ? "🖼️" : "📄"} {f.file_name}</span>
+                    <a href={`${process.env.REACT_APP_API_URL || "/api"}/upload/file/${f.file_path}`} download={f.file_name} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 11, fontWeight: 600, textDecoration: "none" }}>Download</a>
+                  </div>
                 </div>
               ))}
             </div>
           )}
-          <div style={{ color: T.text2, fontSize: 13, marginBottom: 12 }}>Upload materials for <strong>{lesson.title}</strong>. Any file type accepted.</div>
+          <div style={{ color: T.text2, fontSize: 13, marginBottom: 12 }}>Upload materials for <strong>{lesson.title}</strong>. Any file type accepted (including images).</div>
           <div onClick={() => ref.current.click()} style={{ border: `2px dashed ${T.border2}`, borderRadius: 12, padding: "28px 20px", textAlign: "center", cursor: "pointer", background: T.bg2, marginBottom: 14, transition: "border-color 0.2s" }}
             onMouseEnter={e => e.currentTarget.style.borderColor = T.primary}
             onMouseLeave={e => e.currentTarget.style.borderColor = T.border2}>
@@ -560,21 +582,51 @@ function LessonUploadModal({ lesson, modId, isInstructor, onClose }) {
           {files.length > 0 && <Btn onClick={submit} color={T.primary} disabled={uploading}>{uploading ? "Uploading..." : `Upload ${files.length} file(s)`}</Btn>}
         </>
       ) : (
-        <div style={{ textAlign: "center", padding: 20 }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>📂</div>
-          <div style={{ color: T.text2, fontSize: 14 }}>Materials uploaded by the instructor will appear here.</div>
-          {existing.length > 0 && (
-            <div style={{ marginTop: 16, textAlign: "left" }}>
-              {existing.map((f, i) => (
-                <a key={i} href={`${process.env.REACT_APP_API_URL || "/api"}/upload/file/${f.file_path}`} target="_blank" rel="noopener noreferrer"
-                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, marginBottom: 8, textDecoration: "none" }}>
-                  <span style={{ fontSize: 18 }}>📄</span>
-                  <span style={{ color: T.primary, fontSize: 13, fontWeight: 600 }}>{f.file_name}</span>
-                </a>
-              ))}
+        <div style={{ padding: "4px 0" }}>
+          {lesson.type === "video" && lesson.video_url && (
+            <div style={{ marginBottom: 16 }}>
+              {getYouTubeId(lesson.video_url) ? (
+                <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", background: "#000", border: `1px solid ${T.border}` }}>
+                  <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${getYouTubeId(lesson.video_url)}`} title={lesson.title} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
+                </div>
+              ) : (
+                <a href={lesson.video_url} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 13, fontWeight: 600 }}>▶ Open video →</a>
+              )}
             </div>
           )}
-          <div style={{ marginTop: 16 }}><Btn onClick={onClose}>Close</Btn></div>
+          {lesson.type === "quiz" && lesson.form_url && (
+            <div style={{ marginBottom: 16 }}>
+              <a href={lesson.form_url} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 13, fontWeight: 600 }}>📋 Open quiz form →</a>
+            </div>
+          )}
+          {lesson.instructions && (
+            <div style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 10, padding: "12px 14px", marginBottom: 16, whiteSpace: "pre-wrap", fontSize: 13, color: T.text, lineHeight: 1.5 }}>
+              {lesson.instructions}
+            </div>
+          )}
+          {existing.length > 0 ? (
+            <div style={{ textAlign: "left" }}>
+              <div style={{ color: T.text2, fontSize: 12, fontWeight: 700, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.4 }}>Materials</div>
+              {existing.map((f, i) => (
+                <div key={i} style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "10px 14px", marginBottom: 8 }}>
+                  {isImage(f) && (
+                    <img src={`${process.env.REACT_APP_API_URL || "/api"}/upload/file/${f.file_path}`} alt={f.file_name} style={{ maxWidth: "100%", borderRadius: 8, marginBottom: 8, display: "block" }} />
+                  )}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 18 }}>{isImage(f) ? "🖼️" : "📄"}</span>
+                    <span style={{ color: T.text, fontSize: 13, fontWeight: 600, flex: 1 }}>{f.file_name}</span>
+                    <a href={`${process.env.REACT_APP_API_URL || "/api"}/upload/file/${f.file_path}`} download={f.file_name} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>Download</a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : !lesson.instructions && lesson.type !== "video" && lesson.type !== "quiz" && (
+            <div style={{ textAlign: "center", padding: 20 }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>📂</div>
+              <div style={{ color: T.text2, fontSize: 14 }}>Materials uploaded by the instructor will appear here.</div>
+            </div>
+          )}
+          <div style={{ marginTop: 16, textAlign: "center" }}><Btn onClick={onClose}>Close</Btn></div>
         </div>
       )}
     </Modal>
