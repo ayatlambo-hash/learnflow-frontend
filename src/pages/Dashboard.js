@@ -2504,7 +2504,7 @@ function HomeTab({ isInstructor }) {
           </div>
           {/* English decorations row */}
           <div style={{ display: "flex", gap: 14, marginTop: 20, flexWrap: "wrap" }}>
-            {["📖 Grammar", "🎧 Listening", "✍️ Writing", "🗣️ Speaking"].map(tag => (
+            {["🎬 Scenarios", "🧭 Decisions", "🧰 Teaching Toolkit", "🎯 Practice"].map(tag => (
               <span key={tag} style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(4px)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 20, padding: "4px 12px", fontSize: 11, fontWeight: 600 }}>{tag}</span>
             ))}
           </div>
