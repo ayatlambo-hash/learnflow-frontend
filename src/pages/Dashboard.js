@@ -685,12 +685,12 @@ function LessonUploadModal({ lesson, modId, isInstructor, onClose }) {
               {existing.map((f, i) => (
                 <div key={i} style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "10px 14px", marginBottom: 8 }}>
                   {isImage(f) && (
-                    <img src={fileUrl(`/upload/file/${f.file_path}`)} alt={f.file_name} style={{ maxWidth: "100%", borderRadius: 8, marginBottom: 8, display: "block" }} />
+                    <img src={fileUrl(`/modules/lessons/materials/file/${f.file_path}`)} alt={f.file_name} style={{ maxWidth: "100%", borderRadius: 8, marginBottom: 8, display: "block" }} />
                   )}
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <span style={{ fontSize: 18 }}>{isImage(f) ? "🖼️" : "📄"}</span>
                     <span style={{ color: T.text, fontSize: 13, fontWeight: 600, flex: 1 }}>{f.file_name}</span>
-                    <a href={fileUrl(`/upload/file/${f.file_path}`)} download={f.file_name} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>Download</a>
+                    <a href={fileUrl(`/modules/lessons/materials/file/${f.file_path}`)} download={f.file_name} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>Download</a>
                   </div>
                 </div>
               ))}
