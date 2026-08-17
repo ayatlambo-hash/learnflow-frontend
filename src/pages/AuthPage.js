@@ -309,7 +309,7 @@ export default function AuthPage() {
       <div style={{ width: '100%', maxWidth: 440, position: 'relative', zIndex: 2 }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{ width: 64, height: 64, borderRadius: 20, background: `linear-gradient(135deg, ${T.purple}, #fd79a8)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, margin: '0 auto 14px', boxShadow: `0 8px 32px rgba(108,92,231,0.5)` }}>🎓</div>
-          <div style={{ fontWeight: 900, fontSize: 18, color: '#fff', letterSpacing: '0.08em', textShadow: '0 2px 12px rgba(0,0,0,0.4)', textTransform: 'uppercase' }}>PROFESSIONAL COMMUNICATION FOR TEACHERS</div>
+          <div style={{ fontWeight: 900, fontSize: 16, color: '#fff', letterSpacing: '0.05em', textShadow: '0 2px 12px rgba(0,0,0,0.4)', textTransform: 'uppercase' }}>Professional Communication for Pre-service Teachers</div>
           <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, marginTop: 4 }}>🇬🇧 Online Learning Platform</div>
         </div>
 

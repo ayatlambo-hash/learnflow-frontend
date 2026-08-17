@@ -2377,13 +2377,13 @@ function HomeTab({ isInstructor }) {
           <div style={{ fontWeight: 900, fontSize: 28, fontFamily: "'Nunito',sans-serif", marginBottom: 4, letterSpacing: "-0.02em" }}>
             {user?.name?.split(" ")[0] || "Learner"}
           </div>
-          <div style={{ opacity: 0.8, fontSize: 13, marginBottom: 14 }}>🇬🇧 PC 101 Professional Communication for Teachers</div>
+          <div style={{ opacity: 0.8, fontSize: 13, marginBottom: 14 }}>🇬🇧 PC 101 Professional Communication for Pre-service Teachers</div>
 
           {/* Course Description */}
           <div style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 12, padding: "14px 16px", marginBottom: 20, backdropFilter: "blur(4px)" }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", opacity: 0.7, marginBottom: 7 }}>Course Description</div>
             <div style={{ fontSize: 13, lineHeight: 1.65, opacity: 0.92 }}>
-              The PC 101 Professional Communication for Teachers course is designed to enhance the communication skills of educators in various professional contexts. The program consists of four modules that build upon each other, focusing on the foundations of professional communication, enhancing language skills, mastering teaching knowledge, and applying these skills in real-world teaching scenarios. Students will engage in interactive lessons that develop their ability to communicate effectively with colleagues, students, and parents, ensuring they are well-prepared for diverse educational environments.
+              The PC 101 Professional Communication for Pre-service Teachers course is designed to enhance the communication skills of educators in various professional contexts. The program consists of four modules that build upon each other, focusing on the foundations of professional communication, enhancing language skills, mastering teaching knowledge, and applying these skills in real-world teaching scenarios. Students will engage in interactive lessons that develop their ability to communicate effectively with colleagues, students, and parents, ensuring they are well-prepared for diverse educational environments.
             </div>
           </div>
 
@@ -2683,7 +2683,7 @@ export default function Dashboard() {
         <div style={{ width: sidebarOpen ? 220 : 60, background: T.bg1, borderRight: `1px solid ${T.border}`, display: "flex", flexDirection: "column", transition: "width .25s ease", overflow: "hidden", flexShrink: 0, boxShadow: "2px 0 8px rgba(0,0,0,0.04)", position: "relative", zIndex: 3 }}>
           <div style={{ padding: "18px 14px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #2563eb, #7c3aed)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0, color: "#fff", boxShadow: "0 4px 12px rgba(37,99,235,0.35)", animation: "pulse 3s ease-in-out infinite" }}>🎓</div>
-            {sidebarOpen && <span style={{ fontWeight: 900, fontSize: 11, color: T.text, whiteSpace: "nowrap", fontFamily: "'Nunito',sans-serif", letterSpacing: '0.05em', textTransform: 'uppercase', background: "linear-gradient(135deg, #2563eb, #7c3aed)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>PROFESSIONAL COMMUNICATION</span>}
+            {sidebarOpen && <span style={{ fontWeight: 900, fontSize: 10, color: T.text, whiteSpace: "nowrap", fontFamily: "'Nunito',sans-serif", letterSpacing: '0.03em', textTransform: 'uppercase', background: "linear-gradient(135deg, #2563eb, #7c3aed)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>PC for Pre-service Teachers</span>}
             <button onClick={() => setSidebarOpen(o => !o)} style={{ marginLeft: "auto", background: T.bg3, border: "none", borderRadius: 6, color: T.text3, cursor: "pointer", width: 26, height: 26, flexShrink: 0, fontSize: 12 }}>
               {sidebarOpen ? "←" : "→"}
             </button>
