@@ -779,10 +779,22 @@ function CourseNavTab({ isInstructor }) {
       <div style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #7c3aed 100%)", borderRadius: 16, padding: "28px 28px", marginBottom: 24, color: "#fff", position: "relative", overflow: "hidden", boxShadow: "0 8px 28px rgba(37,99,235,0.28)" }}>
         <div style={{ position: "absolute", top: -30, right: -30, width: 130, height: 130, borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
         <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ fontSize: 12, opacity: 0.75, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700, marginBottom: 6 }}>Course Materials</div>
-          <div style={{ fontWeight: 900, fontSize: 22, fontFamily: "'Nunito',sans-serif", marginBottom: 4 }}>Course Structure</div>
-          <div style={{ opacity: 0.8, fontSize: 13 }}>
-            {isInstructor ? "Click any lesson to upload files — any format accepted" : "Click any lesson to view uploaded materials"}
+          <div style={{ fontWeight: 900, fontSize: 20, fontFamily: "'Nunito',sans-serif", marginBottom: 6, lineHeight: 1.3 }}>Developing Professional Foreign Language Communicative Competence of Pre-Service Teachers</div>
+          <div style={{ opacity: 0.85, fontSize: 13, fontStyle: "italic", marginBottom: 18 }}>via Scenario-Based Microlearning in MOOCs</div>
+          <div style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, overflow: "hidden", backdropFilter: "blur(4px)" }}>
+            {[
+              ["Format", "Scenario-Based Microlearning · MOOC"],
+              ["Audience", "Pre-service EFL teachers · University level"],
+              ["Total modules", "4 modules · 10 weeks"],
+              ["Total scenarios", "7 classroom scenarios"],
+              ["Framework", "Canale & Swain (1980) · Byram (1997) · DigCompEdu (Redecker, 2017)"],
+              ["Competences", "Linguistic · Sociolinguistic · Discourse · Strategic · ICC · Digital"],
+            ].map(([k, v], i) => (
+              <div key={k} style={{ display: "flex", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.15)" : "none" }}>
+                <div style={{ width: 150, flexShrink: 0, padding: "10px 14px", fontWeight: 700, fontSize: 12.5, background: "rgba(255,255,255,0.06)" }}>{k}</div>
+                <div style={{ flex: 1, padding: "10px 14px", fontSize: 12.5, opacity: 0.92 }}>{v}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -2295,6 +2307,101 @@ function ResourcesTab({ isInstructor }) {
   );
 }
 
+function AssessmentTab({ isInstructor }) {
+  const [sheets, setSheets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAdd, setShowAdd] = useState(false);
+  const [form, setForm] = useState({});
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef();
+
+  const load = () => {
+    api.get("/resources").then(r => { setSheets(r.data.filter(x => x.type === "assessment")); setLoading(false); });
+  };
+  useEffect(() => { load(); }, []);
+
+  const submitSheet = async () => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("title", form.title || file.name);
+      if (form.description) fd.append("description", form.description);
+      fd.append("type", "assessment");
+      await api.post("/resources", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      load();
+      setShowAdd(false); setForm({}); setFile(null);
+    } catch { alert("Failed to upload sheet."); }
+    finally { setUploading(false); }
+  };
+
+  const deleteSheet = async (id) => {
+    if (!window.confirm("Delete this sheet?")) return;
+    await api.delete(`/resources/${id}`);
+    setSheets(s => s.filter(x => x.id !== id));
+  };
+
+  if (loading) return <div style={{ color: T.text3, padding: 20 }}>Loading...</div>;
+
+  return (
+    <div>
+      {showAdd && (
+        <Modal onClose={() => { setShowAdd(false); setForm({}); setFile(null); }} title="Add Assessment Sheet">
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Title</div>
+            <input value={form.title || ""} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="e.g. Grade Tracker" style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <div onClick={() => fileRef.current.click()} style={{ border: `2px dashed ${T.border2}`, borderRadius: 10, padding: "22px 20px", textAlign: "center", cursor: "pointer", background: T.bg2 }}>
+              <div style={{ fontSize: 24, marginBottom: 6 }}>📊</div>
+              <div style={{ color: T.text2, fontSize: 13 }}>{file ? file.name : "Click to select Excel file (.xlsx, .xls)"}</div>
+              <input ref={fileRef} type="file" style={{ display: "none" }} accept=".xlsx,.xls" onChange={e => setFile(e.target.files[0])} />
+            </div>
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Description (optional)</div>
+            <input value={form.description || ""} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Brief description..." style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
+          </div>
+          <Btn onClick={submitSheet} color={T.green} disabled={uploading || !file}>{uploading ? "Uploading..." : "Upload Sheet"}</Btn>
+        </Modal>
+      )}
+
+      <div style={{ background: "linear-gradient(135deg, #15803d, #0891b2)", borderRadius: 12, padding: "22px 24px", marginBottom: 20, color: "#fff" }}>
+        <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>Progress Tracking</div>
+        <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 4 }}>Assessment</div>
+        <div style={{ opacity: 0.75, fontSize: 13 }}>Download the Excel sheet to track your grades and progress throughout the course</div>
+      </div>
+
+      {isInstructor && (
+        <div style={{ marginBottom: 20 }}><Btn onClick={() => setShowAdd(true)}>+ Add Assessment Sheet</Btn></div>
+      )}
+
+      {sheets.length === 0 ? (
+        <div style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 10, padding: "30px 20px", textAlign: "center", color: T.text3, fontSize: 13 }}>
+          <div style={{ fontSize: 34, marginBottom: 10 }}>📊</div>
+          No assessment sheet uploaded yet.
+        </div>
+      ) : sheets.map(s => (
+        <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: T.bg1, border: `1px solid ${T.border}`, borderRadius: 10, marginBottom: 8 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 8, background: "#dcfce7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>📊</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: 13, color: T.text }}>{s.title}</div>
+            {s.description && <div style={{ color: T.text3, fontSize: 12, marginTop: 2 }}>{s.description}</div>}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {s.file_path && (
+              <a href={`${process.env.REACT_APP_API_URL || '/api'}/resources/file/${s.file_path}`} download={s.file_name} target="_blank" rel="noopener noreferrer" style={{ background: T.green + "14", color: T.green, border: `1px solid ${T.green}33`, borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>Download</a>
+            )}
+            {isInstructor && <button onClick={() => deleteSheet(s.id)} style={{ background: "#fee2e2", border: "none", borderRadius: 6, color: T.red, cursor: "pointer", padding: "6px 10px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>✕</button>}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function FloatingLetters() {
   const letters = [
     { char: "A", top: "12%", left: "6%", size: 52, color: "rgba(255,255,255,0.18)", anim: "floatA", dur: "4s" },
@@ -2644,6 +2751,7 @@ export default function Dashboard() {
     { id: "course", icon: "📋", label: "Course Navigation" },
     { id: "modules", icon: "📖", label: "My Modules" },
     { id: "resources", icon: "📂", label: "Resources" },
+    { id: "assessment", icon: "📊", label: "Assessment" },
     ...(!isInstructor ? [{ id: "grades", icon: "🎓", label: "Grades" }] : []),
     { id: "chat", icon: "💬", label: "Chat" },
     { id: "forum", icon: "◆", label: "Forum" },
@@ -2653,7 +2761,7 @@ export default function Dashboard() {
     ] : []),
   ];
 
-  const TITLES = { home: "Dashboard", course: "Course Navigation", modules: "My Modules", grades: "Grades", chat: "Group Chat", forum: "Forum", students: "Students", submissions: "Student Submissions", resources: "Resources & Links" };
+  const TITLES = { home: "Dashboard", course: "Course Navigation", modules: "My Modules", grades: "Grades", chat: "Group Chat", forum: "Forum", students: "Students", submissions: "Student Submissions", resources: "Resources & Links", assessment: "Assessment" };
 
   return (
     <>
@@ -2753,6 +2861,7 @@ export default function Dashboard() {
             {tab === "course" && <CourseNavTab isInstructor={isInstructor} />}
             {tab === "modules" && <ModulesTab isInstructor={isInstructor} />}
             {tab === "resources" && <ResourcesTab isInstructor={isInstructor} />}
+            {tab === "assessment" && <AssessmentTab isInstructor={isInstructor} />}
             {tab === "grades" && !isInstructor && <GradesTab user={user} />}
             {tab === "chat" && <ChatTab user={user} />}
             {tab === "forum" && <ForumTab user={user} />}
