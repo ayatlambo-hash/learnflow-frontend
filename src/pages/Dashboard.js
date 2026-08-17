@@ -2,6 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/client";
 
+// Plain <img>/<audio>/<a> tags can't send the Authorization header, so we
+// append the JWT as a query param for these direct file-serving endpoints.
+function fileUrl(path) {
+  const token = localStorage.getItem("lf_token") || "";
+  return `${process.env.REACT_APP_API_URL || "/api"}${path}?token=${token}`;
+}
+
 const LIGHT = {
   bg: "#f5f7fa", bg1: "#ffffff", bg2: "#f8fafc", bg3: "#eef2f7",
   border: "#e2e8f0", border2: "#cbd5e1",
@@ -248,6 +255,63 @@ function UploadModal({ lesson, onClose, onComplete, lessons, activeLessonIdx }) 
   );
 }
 
+function MaterialsModal({ lesson, onClose, onComplete, lessons, activeLessonIdx }) {
+  const [materials, setMaterials] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const total = lessons?.length || 1;
+  const current = (activeLessonIdx ?? 0) + 1;
+  const isLast = activeLessonIdx >= total - 1;
+  const isAudio = lesson.type === "audio";
+  const color = isAudio ? "#db2777" : T.teal;
+
+  useEffect(() => {
+    api.get(`/modules/lessons/${lesson.id}/materials`).then(r => { setMaterials(r.data); setLoading(false); }).catch(() => setLoading(false));
+  }, [lesson.id]);
+
+  return (
+    <Modal onClose={onClose} title={lesson.title}>
+      {lesson.instructions && (
+        <div style={{ background: color + "10", border: `1px solid ${color}33`, borderRadius: 10, padding: "12px 14px", marginBottom: 16 }}>
+          <div style={{ fontWeight: 700, fontSize: 12, color, marginBottom: 6 }}>{isAudio ? "🎧" : "📄"} Instructions</div>
+          <div style={{ color: T.text, fontSize: 13, whiteSpace: "pre-wrap" }}>{lesson.instructions}</div>
+        </div>
+      )}
+
+      {loading ? (
+        <div style={{ color: T.text3, fontSize: 13, textAlign: "center", padding: 20 }}>Loading...</div>
+      ) : materials.length === 0 ? (
+        <div style={{ textAlign: "center", padding: 24, color: T.text3 }}>
+          <div style={{ fontSize: 36, marginBottom: 10 }}>{isAudio ? "🎧" : "📂"}</div>
+          <div style={{ fontSize: 13 }}>No materials uploaded yet.</div>
+        </div>
+      ) : (
+        <div style={{ marginBottom: 16 }}>
+          {materials.map(m => {
+            const isAudioFile = (m.mime_type || "").startsWith("audio/");
+            const mUrl = fileUrl(`/modules/lessons/materials/file/${m.file_path}`);
+            return (
+              <div key={m.id} style={{ background: color + "0d", border: `1px solid ${color}25`, borderRadius: 10, padding: "12px 14px", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: isAudioFile ? 8 : 0 }}>
+                  <span style={{ fontSize: 18 }}>{isAudioFile ? "🎧" : "📄"}</span>
+                  <span style={{ color: T.text, fontSize: 13, fontWeight: 600, flex: 1 }}>{m.file_name}</span>
+                  <a href={mUrl} download={m.file_name} target="_blank" rel="noopener noreferrer" style={{ color, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>Download</a>
+                </div>
+                {isAudioFile && <audio controls src={mUrl} style={{ width: "100%" }} />}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <button onClick={() => onComplete ? onComplete() : onClose()} style={{ background: color, border: "none", borderRadius: 8, color: "#fff", padding: "8px 16px", cursor: "pointer", fontFamily: "'Inter',sans-serif", fontWeight: 600, fontSize: 13 }}>✓ Mark Complete</button>
+        <button onClick={onClose} style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, color: T.text2, padding: "8px 14px", cursor: "pointer", fontFamily: "'Inter',sans-serif", fontWeight: 600, fontSize: 13 }}>Close</button>
+        {!isLast && <span style={{ marginLeft: "auto", color: T.text3, fontSize: 11 }}>Activity {current} of {total}</span>}
+      </div>
+    </Modal>
+  );
+}
+
 function ModuleResources({ moduleId, isInstructor }) {
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -421,7 +485,7 @@ function ModuleResources({ moduleId, isInstructor }) {
               </div>
             )}
             {r.file_path && (
-              <a href={`${process.env.REACT_APP_API_URL || "/api"}/resources/file/${r.file_path}`} target="_blank" rel="noopener noreferrer" style={{ background: T.primary + "14", color: T.primary, borderRadius: 6, padding: "4px 10px", fontSize: 11, fontWeight: 700, textDecoration: "none" }}>Download</a>
+              <a href={fileUrl(`/resources/file/${r.file_path}`)} target="_blank" rel="noopener noreferrer" style={{ background: T.primary + "14", color: T.primary, borderRadius: 6, padding: "4px 10px", fontSize: 11, fontWeight: 700, textDecoration: "none" }}>Download</a>
             )}
             {r.url && (
               <a href={r.url} target="_blank" rel="noopener noreferrer" style={{ background: T.primary + "14", color: T.primary, borderRadius: 6, padding: "4px 10px", fontSize: 11, fontWeight: 700, textDecoration: "none" }}>Open →</a>
@@ -471,7 +535,7 @@ function LessonUploadModal({ lesson, modId, isInstructor, onClose }) {
   const ref = useRef();
 
   useEffect(() => {
-    api.get(`/upload/submissions/${lesson.id}`).then(r => setExisting(r.data)).catch(() => {});
+    api.get(`/modules/lessons/${lesson.id}/materials`).then(r => setExisting(r.data)).catch(() => {});
   }, [lesson.id]);
 
   const addF = (fs) => setFiles(p => [...p, ...[...fs].map(f => ({ file: f, name: f.name, size: (f.size / 1024).toFixed(0) + " KB" }))]);
@@ -481,10 +545,18 @@ function LessonUploadModal({ lesson, modId, isInstructor, onClose }) {
     try {
       const form = new FormData();
       files.forEach(f => form.append("files", f.file));
-      await api.post(`/upload/${lesson.id}`, form, { headers: { "Content-Type": "multipart/form-data" } });
+      const r = await api.post(`/modules/lessons/${lesson.id}/materials`, form, { headers: { "Content-Type": "multipart/form-data" } });
+      setExisting(e => [...e, ...r.data]);
+      setFiles([]);
       setDone(true);
     } catch (e) { alert("Upload failed: " + e.message); }
     finally { setUploading(false); }
+  };
+
+  const deleteExisting = async (id) => {
+    if (!window.confirm("Remove this file?")) return;
+    await api.delete(`/modules/lessons/materials/${id}`);
+    setExisting(e => e.filter(f => f.id !== id));
   };
 
   const saveIntro = async () => {
@@ -554,11 +626,14 @@ function LessonUploadModal({ lesson, modId, isInstructor, onClose }) {
               {existing.map((f, i) => (
                 <div key={i} style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "7px 12px", marginBottom: 5 }}>
                   {isImage(f) && (
-                    <img src={`${process.env.REACT_APP_API_URL || "/api"}/upload/file/${f.file_path}`} alt={f.file_name} style={{ maxWidth: "100%", borderRadius: 6, marginBottom: 6, display: "block" }} />
+                    <img src={fileUrl(`/modules/lessons/materials/file/${f.file_path}`)} alt={f.file_name} style={{ maxWidth: "100%", borderRadius: 6, marginBottom: 6, display: "block" }} />
                   )}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ color: T.text2, fontSize: 12 }}>{isImage(f) ? "🖼️" : "📄"} {f.file_name}</span>
-                    <a href={`${process.env.REACT_APP_API_URL || "/api"}/upload/file/${f.file_path}`} download={f.file_name} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 11, fontWeight: 600, textDecoration: "none" }}>Download</a>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <a href={fileUrl(`/modules/lessons/materials/file/${f.file_path}`)} download={f.file_name} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 11, fontWeight: 600, textDecoration: "none" }}>Download</a>
+                      <button onClick={() => deleteExisting(f.id)} style={{ background: "#fee2e2", border: "none", borderRadius: 5, color: T.red, cursor: "pointer", padding: "2px 6px", fontSize: 11 }}>✕</button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -610,12 +685,12 @@ function LessonUploadModal({ lesson, modId, isInstructor, onClose }) {
               {existing.map((f, i) => (
                 <div key={i} style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "10px 14px", marginBottom: 8 }}>
                   {isImage(f) && (
-                    <img src={`${process.env.REACT_APP_API_URL || "/api"}/upload/file/${f.file_path}`} alt={f.file_name} style={{ maxWidth: "100%", borderRadius: 8, marginBottom: 8, display: "block" }} />
+                    <img src={fileUrl(`/upload/file/${f.file_path}`)} alt={f.file_name} style={{ maxWidth: "100%", borderRadius: 8, marginBottom: 8, display: "block" }} />
                   )}
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <span style={{ fontSize: 18 }}>{isImage(f) ? "🖼️" : "📄"}</span>
                     <span style={{ color: T.text, fontSize: 13, fontWeight: 600, flex: 1 }}>{f.file_name}</span>
-                    <a href={`${process.env.REACT_APP_API_URL || "/api"}/upload/file/${f.file_path}`} download={f.file_name} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>Download</a>
+                    <a href={fileUrl(`/upload/file/${f.file_path}`)} download={f.file_name} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>Download</a>
                   </div>
                 </div>
               ))}
@@ -803,10 +878,10 @@ function CourseNavTab({ isInstructor }) {
         <Modal onClose={() => { setAddingLesson(false); setActiveMod(null); setLesForm({ type: "video" }); }} title={`Add Lesson to ${activeMod.title}`}>
           <div style={{ marginBottom: 14 }}>
             <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Type</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {["video", "quiz", "assignment", "reading"].map(t => (
-                <button key={t} onClick={() => setLesForm(f => ({ ...f, type: t }))} style={{ flex: 1, padding: "8px 4px", borderRadius: 8, border: `1.5px solid ${lesForm.type === t ? T.primary : T.border}`, background: lesForm.type === t ? "#eff6ff" : T.bg2, cursor: "pointer", fontSize: 11, fontWeight: 600, color: lesForm.type === t ? T.primary : T.text3, fontFamily: "'Inter',sans-serif" }}>
-                  {t === "video" ? "Video" : t === "quiz" ? "Quiz" : t === "assignment" ? "Task" : "Reading"}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {["video", "quiz", "assignment", "reading", "audio"].map(t => (
+                <button key={t} onClick={() => setLesForm(f => ({ ...f, type: t }))} style={{ flex: "1 1 auto", minWidth: 70, padding: "8px 4px", borderRadius: 8, border: `1.5px solid ${lesForm.type === t ? T.primary : T.border}`, background: lesForm.type === t ? "#eff6ff" : T.bg2, cursor: "pointer", fontSize: 11, fontWeight: 600, color: lesForm.type === t ? T.primary : T.text3, fontFamily: "'Inter',sans-serif" }}>
+                  {t === "video" ? "Video" : t === "quiz" ? "Quiz" : t === "assignment" ? "Task" : t === "reading" ? "Reading" : "Audio"}
                 </button>
               ))}
             </div>
@@ -815,13 +890,20 @@ function CourseNavTab({ isInstructor }) {
             ["title", "Lesson Title", "e.g. Introduction"],
             ["dur", "Duration", "e.g. 12:30"],
             ["deadline", "Deadline", "YYYY-MM-DD"],
-            ["url", lesForm.type === "quiz" ? "Google Form URL" : "Video URL", lesForm.type === "quiz" ? "https://forms.google.com/..." : "https://youtube.com/..."]
+            ...(lesForm.type === "video" || lesForm.type === "quiz" || !lesForm.type
+              ? [["url", lesForm.type === "quiz" ? "Google Form URL" : "Video URL", lesForm.type === "quiz" ? "https://forms.google.com/..." : "https://youtube.com/..."]]
+              : [])
           ].map(([k, l, p]) => (
             <div key={k} style={{ marginBottom: 12 }}>
               <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>{l}</div>
               <input value={lesForm[k] || ""} onChange={e => setLesForm(f => ({ ...f, [k]: e.target.value }))} placeholder={p} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
             </div>
           ))}
+          {(lesForm.type === "reading" || lesForm.type === "audio" || lesForm.type === "assignment") && (
+            <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: "10px 12px", marginBottom: 14, fontSize: 12, color: T.text2 }}>
+              📎 After saving, click the lesson to upload the {lesForm.type === "audio" ? "MP3 audio file" : lesForm.type === "reading" ? "PDF/document" : "file(s)"} — it will be downloadable for students.
+            </div>
+          )}
           <Btn onClick={saveLesson} color={T.green}>Save Lesson</Btn>
         </Modal>
       )}
@@ -923,12 +1005,17 @@ function InstructorLessonModal({ lesson, onClose, onSaved }) {
   const [form, setForm] = useState({ url: lesson.video_url || "", duration: lesson.duration || "", deadline: lesson.deadline || "", instructions: lesson.instructions || "" });
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [done, setDone] = useState(false);
+  const [materials, setMaterials] = useState([]);
   const ref = useRef();
 
   const isVideo = lesson.type === "video";
   const isQuiz  = lesson.type === "quiz";
-  const isUpload = lesson.type === "assignment" || lesson.type === "reading";
+  const isUpload = lesson.type === "assignment" || lesson.type === "reading" || lesson.type === "audio";
+  const isAudio = lesson.type === "audio";
+
+  useEffect(() => {
+    if (isUpload) api.get(`/modules/lessons/${lesson.id}/materials`).then(r => setMaterials(r.data)).catch(() => {});
+  }, [lesson.id, isUpload]);
 
   const saveUrl = async () => {
     await api.patch(`/modules/lessons/${lesson.id}`, { video_url: form.url, duration: form.duration, deadline: form.deadline, instructions: form.instructions });
@@ -942,15 +1029,22 @@ function InstructorLessonModal({ lesson, onClose, onSaved }) {
     try {
       const fd = new FormData();
       files.forEach(f => fd.append("files", f.file));
-      await api.post(`/upload/${lesson.id}`, fd, { headers: { "Content-Type": "multipart/form-data" } });
-      setDone(true);
+      const r = await api.post(`/modules/lessons/${lesson.id}/materials`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+      setMaterials(m => [...m, ...r.data]);
+      setFiles([]);
     } catch { alert("Upload failed."); }
     finally { setUploading(false); }
   };
 
+  const deleteMaterial = async (id) => {
+    if (!window.confirm("Remove this file?")) return;
+    await api.delete(`/modules/lessons/materials/${id}`);
+    setMaterials(m => m.filter(f => f.id !== id));
+  };
+
   const addF = fs => setFiles(p => [...p, ...[...fs].map(f => ({ file: f, name: f.name, size: (f.size / 1024).toFixed(0) + " KB" }))]);
 
-  const typeConfig = { video: { icon: "▶", color: T.primary }, quiz: { icon: "📋", color: "#7c3aed" }, assignment: { icon: "✏", color: T.amber }, reading: { icon: "📄", color: T.teal } };
+  const typeConfig = { video: { icon: "▶", color: T.primary }, quiz: { icon: "📋", color: "#7c3aed" }, assignment: { icon: "✏", color: T.amber }, reading: { icon: "📄", color: T.teal }, audio: { icon: "🎧", color: "#db2777" } };
   const tc = typeConfig[lesson.type] || typeConfig.video;
 
   return (
@@ -963,14 +1057,7 @@ function InstructorLessonModal({ lesson, onClose, onSaved }) {
         </div>
       </div>
 
-      {done ? (
-        <div style={{ textAlign: "center", padding: 20 }}>
-          <div style={{ fontSize: 44, marginBottom: 10 }}>✅</div>
-          <div style={{ color: T.green, fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Files uploaded!</div>
-          <Btn onClick={onClose}>Done</Btn>
-        </div>
-      ) : (
-        <>
+      <>
           {(isVideo || isQuiz) && (
             <>
               <div style={{ marginBottom: 12 }}>
@@ -1036,14 +1123,31 @@ function InstructorLessonModal({ lesson, onClose, onSaved }) {
                   style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box", resize: "vertical" }} />
               </div>
               <div style={{ marginBottom: 14 }}><Btn onClick={saveUrl} color={T.teal}>💾 Save Instructions</Btn></div>
-              <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Upload files for students</div>
+
+              {materials.length > 0 && (
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Attached files</div>
+                  {materials.map(m => (
+                    <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 10, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "8px 12px", marginBottom: 6 }}>
+                      <span style={{ fontSize: 16 }}>{(m.mime_type || "").startsWith("audio/") ? "🎧" : "📄"}</span>
+                      <span style={{ color: T.text2, fontSize: 12, flex: 1 }}>{m.file_name}</span>
+                      <a href={fileUrl(`/modules/lessons/materials/file/${m.file_path}`)} download={m.file_name} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 11, fontWeight: 600, textDecoration: "none" }}>Download</a>
+                      <button onClick={() => deleteMaterial(m.id)} style={{ background: "#fee2e2", border: "none", borderRadius: 5, color: T.red, cursor: "pointer", padding: "3px 7px", fontSize: 11 }}>✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
+                {isAudio ? "Upload audio file (MP3) for students" : lesson.type === "reading" ? "Upload PDF/document for students" : "Upload files for students"}
+              </div>
               <div onClick={() => ref.current.click()} style={{ border: `2px dashed ${T.border2}`, borderRadius: 12, padding: "26px 20px", textAlign: "center", cursor: "pointer", background: T.bg2, marginBottom: 14, transition: "border-color 0.2s" }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = tc.color}
                 onMouseLeave={e => e.currentTarget.style.borderColor = T.border2}>
                 <div style={{ fontSize: 30, marginBottom: 8 }}>📤</div>
                 <div style={{ color: T.text2, fontSize: 13, fontWeight: 600 }}>Drop files or <span style={{ color: tc.color }}>browse</span></div>
-                <div style={{ color: T.text3, fontSize: 11, marginTop: 4 }}>Any file format accepted</div>
-                <input ref={ref} type="file" multiple style={{ display: "none" }} onChange={e => addF(e.target.files)} />
+                <div style={{ color: T.text3, fontSize: 11, marginTop: 4 }}>{isAudio ? "MP3, WAV, M4A" : lesson.type === "reading" ? "PDF, DOCX" : "Any file format accepted"}</div>
+                <input ref={ref} type="file" multiple accept={isAudio ? ".mp3,.wav,.m4a,audio/*" : lesson.type === "reading" ? ".pdf,.doc,.docx" : undefined} style={{ display: "none" }} onChange={e => addF(e.target.files)} />
               </div>
               {files.map((f, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "8px 12px", marginBottom: 6 }}>
@@ -1054,8 +1158,7 @@ function InstructorLessonModal({ lesson, onClose, onSaved }) {
               {files.length > 0 && <Btn onClick={uploadFiles} color={tc.color} disabled={uploading}>{uploading ? "Uploading..." : `Upload ${files.length} file(s)`}</Btn>}
             </>
           )}
-        </>
-      )}
+      </>
     </Modal>
   );
 }
@@ -1231,6 +1334,7 @@ function ModulesTab({ isInstructor }) {
     const quizCount = lessons.filter(l => l.type === "quiz").length;
     const assignCount = lessons.filter(l => l.type === "assignment").length;
     const readingCount = lessons.filter(l => l.type === "reading").length;
+    const audioCount = lessons.filter(l => l.type === "audio").length;
     const totalDone = lessons.filter(l => l.done).length;
     const completion = lessons.length > 0 ? Math.round((totalDone / lessons.length) * 100) : 0;
 
@@ -1276,14 +1380,15 @@ function ModulesTab({ isInstructor }) {
         )}
         {activeLesson?.type === "quiz" && !isInstructor && <QuizModal lesson={activeLesson} onClose={() => setActiveLesson(null)} onComplete={score => { markDone(activeLesson.id, score); goNext(); }} lessons={lessons} activeLessonIdx={activeLessonIdx} />}
         {activeLesson?.type === "assignment" && !isInstructor && <UploadModal lesson={activeLesson} onClose={() => setActiveLesson(null)} onComplete={() => { markDone(activeLesson.id); goNext(); }} lessons={lessons} activeLessonIdx={activeLessonIdx} />}
+        {(activeLesson?.type === "reading" || activeLesson?.type === "audio") && !isInstructor && <MaterialsModal lesson={activeLesson} onClose={() => setActiveLesson(null)} onComplete={() => { markDone(activeLesson.id); goNext(); }} lessons={lessons} activeLessonIdx={activeLessonIdx} />}
         {addingLesson && (
           <Modal onClose={() => { setAddingLesson(false); setEditingLesson(null); setLesForm({}); }} title={editingLesson ? "Edit Lesson" : "Add Lesson"}>
             <div style={{ marginBottom: 14 }}>
               <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Type</div>
-              <div style={{ display: "flex", gap: 8 }}>
-                {["video", "quiz", "assignment", "reading"].map(t => (
-                  <button key={t} onClick={() => setLesForm(f => ({ ...f, type: t }))} style={{ flex: 1, padding: "8px 4px", borderRadius: 8, border: `1.5px solid ${lesForm.type === t ? T.primary : T.border}`, background: lesForm.type === t ? "#eff6ff" : T.bg2, cursor: "pointer", fontSize: 11, fontWeight: 600, color: lesForm.type === t ? T.primary : T.text3, fontFamily: "'Inter',sans-serif" }}>
-                    {t === "video" ? "Video" : t === "quiz" ? "Quiz" : t === "assignment" ? "Task" : "Reading"}
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {["video", "quiz", "assignment", "reading", "audio"].map(t => (
+                  <button key={t} onClick={() => setLesForm(f => ({ ...f, type: t }))} style={{ flex: "1 1 auto", minWidth: 70, padding: "8px 4px", borderRadius: 8, border: `1.5px solid ${lesForm.type === t ? T.primary : T.border}`, background: lesForm.type === t ? "#eff6ff" : T.bg2, cursor: "pointer", fontSize: 11, fontWeight: 600, color: lesForm.type === t ? T.primary : T.text3, fontFamily: "'Inter',sans-serif" }}>
+                    {t === "video" ? "Video" : t === "quiz" ? "Quiz" : t === "assignment" ? "Task" : t === "reading" ? "Reading" : "Audio"}
                   </button>
                 ))}
               </div>
@@ -1292,13 +1397,20 @@ function ModulesTab({ isInstructor }) {
               ["title", "Lesson Title", "e.g. Introduction"],
               ["dur", "Duration", "e.g. 12:30"],
               ["deadline", "Deadline", "YYYY-MM-DD"],
-              ["url", lesForm.type === "quiz" ? "Google Form URL" : "Video URL", lesForm.type === "quiz" ? "https://forms.google.com/..." : "https://youtube.com/..."]
+              ...(lesForm.type === "video" || lesForm.type === "quiz" || !lesForm.type
+                ? [["url", lesForm.type === "quiz" ? "Google Form URL" : "Video URL", lesForm.type === "quiz" ? "https://forms.google.com/..." : "https://youtube.com/..."]]
+                : [])
             ].map(([k, l, p]) => (
               <div key={k} style={{ marginBottom: 12 }}>
                 <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>{l}</div>
                 <input value={lesForm[k] || ""} onChange={e => setLesForm(f => ({ ...f, [k]: e.target.value }))} placeholder={p} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
               </div>
             ))}
+            {(lesForm.type === "reading" || lesForm.type === "audio" || lesForm.type === "assignment") && (
+              <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: "10px 12px", marginBottom: 14, fontSize: 12, color: T.text2 }}>
+                📎 After saving, click the lesson to upload the {lesForm.type === "audio" ? "MP3 audio file" : lesForm.type === "reading" ? "PDF/document" : "file(s)"} — it will be downloadable for students.
+              </div>
+            )}
             <Btn onClick={saveLesson} color={T.green}>{editingLesson ? "Save Changes" : "Save Lesson"}</Btn>
           </Modal>
         )}
@@ -1349,6 +1461,7 @@ function ModulesTab({ isInstructor }) {
                   { count: quizCount, label: "Quizzes", icon: "📋" },
                   { count: assignCount, label: "Tasks", icon: "✏" },
                   { count: readingCount, label: "Readings", icon: "📄" },
+                  { count: audioCount, label: "Audio", icon: "🎧" },
                 ].filter(b => b.count > 0).map(b => (
                   <span key={b.label} style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 20, padding: "4px 12px", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
                     <span>{b.icon}</span> {b.label} <span style={{ background: "rgba(255,255,255,0.3)", borderRadius: 10, padding: "1px 6px", fontSize: 11 }}>{b.count}</span>
@@ -1373,12 +1486,13 @@ function ModulesTab({ isInstructor }) {
             quiz:       { icon: "📋", color: "#7c3aed",  bg: "#f5f3ff", label: "Quiz" },
             assignment: { icon: "✏", color: T.amber,    bg: "#fffbeb", label: "Task" },
             reading:    { icon: "📄", color: T.teal,     bg: "#ecfeff", label: "Reading" },
+            audio:      { icon: "🎧", color: "#db2777",  bg: "#fdf2f8", label: "Audio" },
           };
           const tc = typeConfig[lesson.type] || typeConfig.video;
           return (
-            <div key={lesson.id} onClick={() => isInstructor ? openLesson(lesson, i) : lesson.type !== "reading" && openLesson(lesson, i)}
-              style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", background: lesson.done ? "#f0fdf4" : T.bg1, border: `1.5px solid ${lesson.done ? "#86efac" : T.border}`, borderRadius: 12, marginBottom: 8, cursor: lesson.type !== "reading" ? "pointer" : "default", transition: "all 0.2s", animation: `fadeUp .3s ease ${i * 0.05}s both` }}
-              onMouseEnter={e => { if (lesson.type !== "reading") { e.currentTarget.style.borderColor = tc.color; e.currentTarget.style.boxShadow = `0 4px 16px ${tc.color}18`; }}}
+            <div key={lesson.id} onClick={() => openLesson(lesson, i)}
+              style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", background: lesson.done ? "#f0fdf4" : T.bg1, border: `1.5px solid ${lesson.done ? "#86efac" : T.border}`, borderRadius: 12, marginBottom: 8, cursor: "pointer", transition: "all 0.2s", animation: `fadeUp .3s ease ${i * 0.05}s both` }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = tc.color; e.currentTarget.style.boxShadow = `0 4px 16px ${tc.color}18`; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = lesson.done ? "#86efac" : T.border; e.currentTarget.style.boxShadow = "none"; }}>
               {/* Step number bubble */}
               <div style={{ width: 30, height: 30, borderRadius: "50%", background: lesson.done ? "#dcfce7" : tc.bg, border: `2px solid ${lesson.done ? "#86efac" : tc.color + "44"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: lesson.done ? T.green : tc.color, fontWeight: 800, flexShrink: 0 }}>
@@ -1403,12 +1517,13 @@ function ModulesTab({ isInstructor }) {
                   <button onClick={e => deleteLesson(lesson.id, e)} title="Delete lesson" style={{ background: "#fee2e2", border: "none", borderRadius: 6, color: T.red, cursor: "pointer", padding: "5px 8px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>✕</button>
                 </div>
               )}
-              {lesson.done
-                ? <span style={{ color: T.green, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>✓ Done</span>
-                : lesson.type !== "reading" && (
-                  <div style={{ background: `linear-gradient(135deg, ${tc.color}, #7c3aed)`, borderRadius: 8, padding: "6px 14px", color: "#fff", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", boxShadow: `0 3px 10px ${tc.color}33` }}>Start →</div>
-                )
-              }
+              {isInstructor
+                ? <div style={{ background: `linear-gradient(135deg, ${tc.color}, #7c3aed)`, borderRadius: 8, padding: "6px 14px", color: "#fff", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", boxShadow: `0 3px 10px ${tc.color}33` }}>↑ Upload</div>
+                : lesson.done
+                  ? <span style={{ color: T.green, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>✓ Done</span>
+                  : (
+                    <div style={{ background: `linear-gradient(135deg, ${tc.color}, #7c3aed)`, borderRadius: 8, padding: "6px 14px", color: "#fff", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", boxShadow: `0 3px 10px ${tc.color}33` }}>{lesson.type === "reading" || lesson.type === "audio" ? "View →" : "Start →"}</div>
+                  )}
             </div>
           );
         })}
@@ -2047,7 +2162,7 @@ function SubmissionsTab() {
           <div style={{ marginBottom: 12 }}>
             <div style={{ color: T.text2, fontSize: 13, marginBottom: 6 }}>File: <strong>{grading.file_name}</strong></div>
             <div style={{ color: T.text3, fontSize: 12, marginBottom: 16 }}>Module: {grading.module_title} · Lesson: {grading.lesson_title}</div>
-            <a href={`${process.env.REACT_APP_API_URL || '/api'}/upload/file/${grading.file_path}`} target="_blank" rel="noopener noreferrer"
+            <a href={fileUrl(`/upload/file/${grading.file_path}`)} target="_blank" rel="noopener noreferrer"
               style={{ display: "inline-block", background: T.primary + "14", color: T.primary, border: `1px solid ${T.primary}33`, borderRadius: 8, padding: "7px 16px", fontSize: 13, fontWeight: 600, textDecoration: "none", marginBottom: 20 }}>
               📎 Download File
             </a>
@@ -2250,7 +2365,7 @@ function ResourcesTab({ isInstructor }) {
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               {r.file_path && (
-                <a href={`${process.env.REACT_APP_API_URL || '/api'}/resources/file/${r.file_path}`} target="_blank" rel="noopener noreferrer" style={{ background: T.primary + "14", color: T.primary, border: `1px solid ${T.primary}33`, borderRadius: 6, padding: "5px 12px", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>Download</a>
+                <a href={fileUrl(`/resources/file/${r.file_path}`)} target="_blank" rel="noopener noreferrer" style={{ background: T.primary + "14", color: T.primary, border: `1px solid ${T.primary}33`, borderRadius: 6, padding: "5px 12px", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>Download</a>
               )}
               {isInstructor && <button onClick={() => startEditResource(r)} style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, color: T.text2, cursor: "pointer", padding: "5px 10px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>Edit</button>}
               {isInstructor && <button onClick={() => deleteResource(r.id)} style={{ background: "#fee2e2", border: "none", borderRadius: 6, color: T.red, cursor: "pointer", padding: "5px 10px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>✕</button>}
@@ -2392,7 +2507,7 @@ function AssessmentTab({ isInstructor }) {
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             {s.file_path && (
-              <a href={`${process.env.REACT_APP_API_URL || '/api'}/resources/file/${s.file_path}`} download={s.file_name} target="_blank" rel="noopener noreferrer" style={{ background: T.green + "14", color: T.green, border: `1px solid ${T.green}33`, borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>Download</a>
+              <a href={fileUrl(`/resources/file/${s.file_path}`)} download={s.file_name} target="_blank" rel="noopener noreferrer" style={{ background: T.green + "14", color: T.green, border: `1px solid ${T.green}33`, borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>Download</a>
             )}
             {isInstructor && <button onClick={() => deleteSheet(s.id)} style={{ background: "#fee2e2", border: "none", borderRadius: 6, color: T.red, cursor: "pointer", padding: "6px 10px", fontSize: 12, fontFamily: "'Inter',sans-serif" }}>✕</button>}
           </div>
