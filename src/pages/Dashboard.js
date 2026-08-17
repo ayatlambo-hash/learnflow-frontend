@@ -256,6 +256,8 @@ function ModuleResources({ moduleId, isInstructor }) {
   const [form, setForm] = useState({});
   const [file, setFile] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [editingRes, setEditingRes] = useState(null);
+  const [editForm, setEditForm] = useState({});
   const fileRef = useRef();
 
   const load = () => {
@@ -281,6 +283,41 @@ function ModuleResources({ moduleId, isInstructor }) {
       load(); setShowAdd(false); setForm({}); setFile(null);
     } catch { alert("Failed."); }
     finally { setSaving(false); }
+  };
+
+  const deleteRes = async (id) => {
+    if (!window.confirm("Delete this material?")) return;
+    await api.delete(`/resources/${id}`);
+    setResources(rs => rs.filter(r => r.id !== id));
+  };
+
+  const startEditRes = (r) => {
+    setEditingRes(r);
+    setEditForm({ title: r.title, description: r.description || "", url: r.url || "" });
+  };
+
+  const saveEditRes = async () => {
+    if (!editForm.title?.trim()) return;
+    const res = await api.put(`/resources/${editingRes.id}`, editForm);
+    setResources(rs => rs.map(r => r.id === editingRes.id ? { ...r, ...res.data } : r));
+    setEditingRes(null); setEditForm({});
+  };
+
+  const moveRes = async (list, idx, dir) => {
+    const other = idx + dir;
+    if (other < 0 || other >= list.length) return;
+    const a = list[idx], b = list[other];
+    await Promise.all([
+      api.patch(`/resources/${a.id}/order`, { order_index: other }),
+      api.patch(`/resources/${b.id}/order`, { order_index: idx }),
+    ]);
+    setResources(rs => {
+      const pos = rs.findIndex(r => r.id === a.id);
+      const otherPos = rs.findIndex(r => r.id === b.id);
+      const copy = [...rs];
+      [copy[pos], copy[otherPos]] = [{ ...copy[otherPos], order_index: pos }, { ...copy[pos], order_index: otherPos }];
+      return copy;
+    });
   };
 
   const readings = resources.filter(r => r.type === "reading" || r.type === "file");
@@ -335,6 +372,26 @@ function ModuleResources({ moduleId, isInstructor }) {
         </Modal>
       )}
 
+      {editingRes && (
+        <Modal onClose={() => { setEditingRes(null); setEditForm({}); }} title="Edit Material">
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Title</div>
+            <input value={editForm.title || ""} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Description</div>
+            <input value={editForm.description || ""} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
+          </div>
+          {editingRes.type === "link" && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>URL</div>
+              <input value={editForm.url || ""} onChange={e => setEditForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
+            </div>
+          )}
+          <Btn onClick={saveEditRes} color={T.green}>Save Changes</Btn>
+        </Modal>
+      )}
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div style={{ fontWeight: 800, fontSize: 15, color: T.text, fontFamily: "'Nunito',sans-serif" }}>Materials for this module</div>
         {isInstructor && <Btn onClick={() => setShowAdd(true)} small>+ Add</Btn>}
@@ -348,13 +405,21 @@ function ModuleResources({ moduleId, isInstructor }) {
         </div>
         {readings.length === 0 ? (
           <div style={{ color: T.text3, fontSize: 12 }}>No reading materials yet{isInstructor ? " — add some above" : ""}.</div>
-        ) : readings.map(r => (
+        ) : readings.map((r, i) => (
           <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: `1px solid #e0e7ff` }}>
             <div style={{ width: 28, height: 28, borderRadius: 6, background: "#dbeafe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>📄</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600, fontSize: 12, color: T.text }}>{r.title}</div>
               {r.description && <div style={{ color: T.text3, fontSize: 11 }}>{r.description}</div>}
             </div>
+            {isInstructor && (
+              <div style={{ display: "flex", gap: 4 }}>
+                <button onClick={() => moveRes(readings, i, -1)} disabled={i === 0} title="Move up" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 5, color: i === 0 ? T.text3 : T.text2, cursor: i === 0 ? "default" : "pointer", padding: "3px 6px", fontSize: 11, opacity: i === 0 ? 0.5 : 1 }}>↑</button>
+                <button onClick={() => moveRes(readings, i, 1)} disabled={i === readings.length - 1} title="Move down" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 5, color: i === readings.length - 1 ? T.text3 : T.text2, cursor: i === readings.length - 1 ? "default" : "pointer", padding: "3px 6px", fontSize: 11, opacity: i === readings.length - 1 ? 0.5 : 1 }}>↓</button>
+                <button onClick={() => startEditRes(r)} title="Edit" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 5, color: T.text2, cursor: "pointer", padding: "3px 6px", fontSize: 11 }}>✎</button>
+                <button onClick={() => deleteRes(r.id)} title="Delete" style={{ background: "#fee2e2", border: "none", borderRadius: 5, color: T.red, cursor: "pointer", padding: "3px 6px", fontSize: 11 }}>✕</button>
+              </div>
+            )}
             {r.file_path && (
               <a href={`${process.env.REACT_APP_API_URL || "/api"}/resources/file/${r.file_path}`} target="_blank" rel="noopener noreferrer" style={{ background: T.primary + "14", color: T.primary, borderRadius: 6, padding: "4px 10px", fontSize: 11, fontWeight: 700, textDecoration: "none" }}>Download</a>
             )}
@@ -373,13 +438,21 @@ function ModuleResources({ moduleId, isInstructor }) {
         </div>
         {links.length === 0 ? (
           <div style={{ color: T.text3, fontSize: 12 }}>No useful links yet{isInstructor ? " — add some above" : ""}.</div>
-        ) : links.map(r => (
+        ) : links.map((r, i) => (
           <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: `1px solid #a7f3d0` }}>
             <div style={{ width: 28, height: 28, borderRadius: 6, background: "#d1fae5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>🔗</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600, fontSize: 12, color: T.text }}>{r.title}</div>
               {r.description && <div style={{ color: T.text3, fontSize: 11 }}>{r.description}</div>}
             </div>
+            {isInstructor && (
+              <div style={{ display: "flex", gap: 4 }}>
+                <button onClick={() => moveRes(links, i, -1)} disabled={i === 0} title="Move up" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 5, color: i === 0 ? T.text3 : T.text2, cursor: i === 0 ? "default" : "pointer", padding: "3px 6px", fontSize: 11, opacity: i === 0 ? 0.5 : 1 }}>↑</button>
+                <button onClick={() => moveRes(links, i, 1)} disabled={i === links.length - 1} title="Move down" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 5, color: i === links.length - 1 ? T.text3 : T.text2, cursor: i === links.length - 1 ? "default" : "pointer", padding: "3px 6px", fontSize: 11, opacity: i === links.length - 1 ? 0.5 : 1 }}>↓</button>
+                <button onClick={() => startEditRes(r)} title="Edit" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 5, color: T.text2, cursor: "pointer", padding: "3px 6px", fontSize: 11 }}>✎</button>
+                <button onClick={() => deleteRes(r.id)} title="Delete" style={{ background: "#fee2e2", border: "none", borderRadius: 5, color: T.red, cursor: "pointer", padding: "3px 6px", fontSize: 11 }}>✕</button>
+              </div>
+            )}
             <a href={r.url} target="_blank" rel="noopener noreferrer" style={{ background: T.teal + "14", color: T.teal, borderRadius: 6, padding: "4px 10px", fontSize: 11, fontWeight: 700, textDecoration: "none" }}>Open →</a>
           </div>
         ))}
@@ -1182,16 +1255,9 @@ function ModulesTab({ isInstructor }) {
                 </div>
               )}
               {openMod.key_topics && (
-                <div style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 11, opacity: 0.85, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Key Topics</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                    {openMod.key_topics.split(/\n|\\n/).filter(t => t.trim()).map((topic, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, fontWeight: 600 }}>
-                        <span style={{ flexShrink: 0, width: 18, height: 18, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>{i + 1}</span>
-                        <span style={{ opacity: 0.95 }}>{topic.trim()}</span>
-                      </div>
-                    ))}
-                  </div>
+                <div style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 10, padding: "10px 14px", marginBottom: 14, backdropFilter: "blur(4px)" }}>
+                  <div style={{ fontSize: 11, opacity: 0.85, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Weeks & Learning Goal</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.5, whiteSpace: "pre-wrap", opacity: 0.95 }}>{openMod.key_topics}</div>
                 </div>
               )}
 
@@ -1408,8 +1474,8 @@ function ModulesTab({ isInstructor }) {
             </div>
           ))}
           <div style={{ marginBottom: 12 }}>
-            <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Key Topics</div>
-            <textarea value={modForm.key_topics || ""} onChange={e => setModForm(f => ({ ...f, key_topics: e.target.value }))} placeholder="One topic per line" rows={4} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box", resize: "vertical" }} />
+            <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Weeks & Learning Goal</div>
+            <textarea value={modForm.key_topics || ""} onChange={e => setModForm(f => ({ ...f, key_topics: e.target.value }))} placeholder="e.g. Weeks 1–2\n\nLearning goal: By the end of this module..." rows={6} style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box", resize: "vertical" }} />
           </div>
           <div style={{ marginBottom: 20 }}>
             <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Color</div>
@@ -2565,7 +2631,7 @@ export default function Dashboard() {
         <div style={{ width: sidebarOpen ? 220 : 60, background: T.bg1, borderRight: `1px solid ${T.border}`, display: "flex", flexDirection: "column", transition: "width .25s ease", overflow: "hidden", flexShrink: 0, boxShadow: "2px 0 8px rgba(0,0,0,0.04)", position: "relative", zIndex: 3 }}>
           <div style={{ padding: "18px 14px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #2563eb, #7c3aed)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0, color: "#fff", boxShadow: "0 4px 12px rgba(37,99,235,0.35)", animation: "pulse 3s ease-in-out infinite" }}>🎓</div>
-            {sidebarOpen && <span style={{ fontWeight: 900, fontSize: 16, color: T.text, whiteSpace: "nowrap", fontFamily: "'Nunito',sans-serif", background: "linear-gradient(135deg, #2563eb, #7c3aed)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>LearnFlow</span>}
+            {sidebarOpen && <span style={{ fontWeight: 900, fontSize: 11, color: T.text, whiteSpace: "nowrap", fontFamily: "'Nunito',sans-serif", letterSpacing: '0.05em', textTransform: 'uppercase', background: "linear-gradient(135deg, #2563eb, #7c3aed)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>PROFESSIONAL COMMUNICATION</span>}
             <button onClick={() => setSidebarOpen(o => !o)} style={{ marginLeft: "auto", background: T.bg3, border: "none", borderRadius: 6, color: T.text3, cursor: "pointer", width: 26, height: 26, flexShrink: 0, fontSize: 12 }}>
               {sidebarOpen ? "←" : "→"}
             </button>

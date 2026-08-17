@@ -146,7 +146,7 @@ export default function AuthPage() {
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ width: 60, height: 60, borderRadius: 20, background: `linear-gradient(135deg, ${T.purple}, #fd79a8)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, margin: '0 auto 14px', boxShadow: `0 8px 24px ${T.purple}33` }}>🎓</div>
-          <div style={{ fontWeight: 900, fontSize: 26, color: T.text, letterSpacing: '-0.02em' }}>LearnFlow</div>
+          <div style={{ fontWeight: 900, fontSize: 16, color: T.text, letterSpacing: '0.06em', textTransform: 'uppercase' }}>PROFESSIONAL COMMUNICATION FOR TEACHERS</div>
           <div style={{ color: T.text3, fontSize: 13, marginTop: 4 }}>Your online learning platform</div>
         </div>
 
