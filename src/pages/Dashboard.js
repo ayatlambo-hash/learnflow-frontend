@@ -91,14 +91,21 @@ function Modal({ children, onClose, title }) {
   );
 }
 
-function getYouTubeId(url) {
+function getEmbedUrl(url) {
   if (!url) return null;
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?\s]+)/);
-  return match ? match[1] : null;
+  // YouTube
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?\s]+)/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
+  
+  // Google Drive
+  const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^\/]+)/);
+  if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+  
+  return null;
 }
 
 function VideoModal({ lesson, onClose, onComplete }) {
-  const ytId = getYouTubeId(lesson.video_url);
+  const embedUrl = getEmbedUrl(lesson.video_url);
   return (
     <Modal onClose={onClose} title={lesson.title}>
       {lesson.instructions && (
@@ -107,13 +114,15 @@ function VideoModal({ lesson, onClose, onComplete }) {
           <div style={{ color: T.text, fontSize: 13, whiteSpace: "pre-wrap" }}>{lesson.instructions}</div>
         </div>
       )}
-      <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", marginBottom: 16, background: "#000" }}>
-        {ytId ? (
-          <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${ytId}?autoplay=1`} title={lesson.title} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
+      <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", marginBottom: 16, background: "#000", border: `1px solid ${T.border}` }}>
+        {embedUrl ? (
+          <iframe width="100%" height="100%" src={embedUrl} title="Video" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
         ) : (
-          <div style={{ background: "#1e293b", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12 }}>
-            <div style={{ fontSize: 40 }}>📖</div>
-            <div style={{ color: "#94a3b8", fontSize: 13 }}>{lesson.video_url ? "Invalid YouTube URL" : "No video URL provided"}</div>
+          <div style={{ background: "#1e293b", width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+            <div style={{ color: "#94a3b8", fontSize: 13 }}>No embeddable video URL</div>
+            {lesson.video_url && (
+              <a href={lesson.video_url} target="_blank" rel="noopener noreferrer" style={{ background: T.primary, color: "#fff", padding: "8px 16px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 600 }}>Open Link in New Tab</a>
+            )}
           </div>
         )}
       </div>
@@ -598,12 +607,12 @@ function LessonUploadModal({ lesson, modId, isInstructor, onClose }) {
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontWeight: 600, fontSize: 12, color: T.text2, marginBottom: 8 }}>Video URL:</div>
               <div style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "8px 12px", fontSize: 12, color: T.text, wordBreak: "break-all", marginBottom: 10 }}>{lesson.video_url}</div>
-              {getYouTubeId(lesson.video_url) && (
+              {getEmbedUrl(lesson.video_url) && (
                 <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", background: "#000", border: `1px solid ${T.border}` }}>
-                  <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${getYouTubeId(lesson.video_url)}`} title="Video preview" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
+                  <iframe width="100%" height="100%" src={getEmbedUrl(lesson.video_url)} title="Video preview" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
                 </div>
               )}
-              {!getYouTubeId(lesson.video_url) && (
+              {!getEmbedUrl(lesson.video_url) && (
                 <a href={lesson.video_url} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 12, fontWeight: 600 }}>Open video link →</a>
               )}
             </div>
@@ -660,9 +669,9 @@ function LessonUploadModal({ lesson, modId, isInstructor, onClose }) {
         <div style={{ padding: "4px 0" }}>
           {lesson.type === "video" && lesson.video_url && (
             <div style={{ marginBottom: 16 }}>
-              {getYouTubeId(lesson.video_url) ? (
+              {getEmbedUrl(lesson.video_url) ? (
                 <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", background: "#000", border: `1px solid ${T.border}` }}>
-                  <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${getYouTubeId(lesson.video_url)}`} title={lesson.title} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
+                  <iframe width="100%" height="100%" src={getEmbedUrl(lesson.video_url)} title={lesson.title} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
                 </div>
               ) : (
                 <a href={lesson.video_url} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 13, fontWeight: 600 }}>▶ Open video →</a>
@@ -1076,13 +1085,13 @@ function InstructorLessonModal({ lesson, onClose, onSaved }) {
                     style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box" }} />
                 </div>
               )}
-              {isVideo && form.url && getYouTubeId(form.url) && (
+              {isVideo && form.url && getEmbedUrl(form.url) && (
                 <div style={{ marginBottom: 12 }}>
                   <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Preview</div>
                   <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", background: "#000", border: `1px solid ${T.border}` }}>
                     <iframe
                       width="100%" height="100%"
-                      src={`https://www.youtube.com/embed/${getYouTubeId(form.url)}`}
+                      src={getEmbedUrl(form.url)}
                       title="Video preview"
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -1090,6 +1099,12 @@ function InstructorLessonModal({ lesson, onClose, onSaved }) {
                       style={{ display: "block" }}
                     />
                   </div>
+                </div>
+              )}
+              {isVideo && form.url && !getEmbedUrl(form.url) && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ color: T.text2, fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Link</div>
+                  <a href={form.url} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontSize: 13, fontWeight: 600 }}>Open video link →</a>
                 </div>
               )}
               <div style={{ marginBottom: 18 }}>
@@ -1347,11 +1362,14 @@ function ModulesTab({ isInstructor }) {
         {activeLesson?.type === "video" && !isInstructor && (
           <Modal onClose={() => setActiveLesson(null)} title={activeLesson.title}>
             <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", marginBottom: 16, background: "#000" }}>
-              {getYouTubeId(activeLesson.video_url) ? (
-                <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${getYouTubeId(activeLesson.video_url)}?autoplay=1`} title={activeLesson.title} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
+              {getEmbedUrl(activeLesson.video_url) ? (
+                <iframe width="100%" height="100%" src={getEmbedUrl(activeLesson.video_url)} title={activeLesson.title} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
               ) : (
-                <div style={{ background: "#1e293b", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <div style={{ color: "#94a3b8", fontSize: 13 }}>No video URL</div>
+                <div style={{ background: "#1e293b", width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+                  <div style={{ color: "#94a3b8", fontSize: 13 }}>No embeddable video URL</div>
+                  {activeLesson.video_url && (
+                    <a href={activeLesson.video_url} target="_blank" rel="noopener noreferrer" style={{ background: T.primary, color: "#fff", padding: "8px 16px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 600 }}>Open Link in New Tab</a>
+                  )}
                 </div>
               )}
             </div>
