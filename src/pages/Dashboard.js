@@ -93,15 +93,16 @@ function Modal({ children, onClose, title }) {
 
 function getEmbedUrl(url) {
   if (!url) return null;
-  // YouTube
+  // YouTube ONLY. Google Drive iframes cause cookie/login block screens for users.
+  // We will handle Google Drive separately as an external link button.
   const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?\s]+)/);
   if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
   
-  // Google Drive
-  const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^\/]+)/);
-  if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
-  
   return null;
+}
+
+function isGoogleDrive(url) {
+  return url && (url.includes('drive.google.com') || url.includes('docs.google.com'));
 }
 
 function VideoModal({ lesson, onClose, onComplete }) {
@@ -119,9 +120,19 @@ function VideoModal({ lesson, onClose, onComplete }) {
           <iframe width="100%" height="100%" src={embedUrl} title="Video" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
         ) : (
           <div style={{ background: "#1e293b", width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
-            <div style={{ color: "#94a3b8", fontSize: 13 }}>No embeddable video URL</div>
-            {lesson.video_url && (
-              <a href={lesson.video_url} target="_blank" rel="noopener noreferrer" style={{ background: T.primary, color: "#fff", padding: "8px 16px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 600 }}>Open Link in New Tab</a>
+            {isGoogleDrive(lesson.video_url) ? (
+              <>
+                <div style={{ fontSize: 32, marginBottom: -4 }}>📁</div>
+                <div style={{ color: "#e2e8f0", fontSize: 14, fontWeight: 600 }}>Google Drive Video</div>
+                <a href={lesson.video_url} target="_blank" rel="noopener noreferrer" style={{ background: "#3b82f6", color: "#fff", padding: "10px 20px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 700, boxShadow: "0 4px 12px rgba(59,130,246,0.3)" }}>▶ Open Video in Google Drive</a>
+              </>
+            ) : (
+              <>
+                <div style={{ color: "#94a3b8", fontSize: 13 }}>No embeddable video URL</div>
+                {lesson.video_url && (
+                  <a href={lesson.video_url} target="_blank" rel="noopener noreferrer" style={{ background: T.primary, color: "#fff", padding: "8px 16px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 600 }}>Open Link in New Tab</a>
+                )}
+              </>
             )}
           </div>
         )}
@@ -1366,9 +1377,19 @@ function ModulesTab({ isInstructor }) {
                 <iframe width="100%" height="100%" src={getEmbedUrl(activeLesson.video_url)} title={activeLesson.title} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
               ) : (
                 <div style={{ background: "#1e293b", width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
-                  <div style={{ color: "#94a3b8", fontSize: 13 }}>No embeddable video URL</div>
-                  {activeLesson.video_url && (
-                    <a href={activeLesson.video_url} target="_blank" rel="noopener noreferrer" style={{ background: T.primary, color: "#fff", padding: "8px 16px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 600 }}>Open Link in New Tab</a>
+                  {isGoogleDrive(activeLesson.video_url) ? (
+                    <>
+                      <div style={{ fontSize: 32, marginBottom: -4 }}>📁</div>
+                      <div style={{ color: "#e2e8f0", fontSize: 14, fontWeight: 600 }}>Google Drive Video</div>
+                      <a href={activeLesson.video_url} target="_blank" rel="noopener noreferrer" style={{ background: "#3b82f6", color: "#fff", padding: "10px 20px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 700, boxShadow: "0 4px 12px rgba(59,130,246,0.3)" }}>▶ Open Video in Google Drive</a>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ color: "#94a3b8", fontSize: 13 }}>No embeddable video URL</div>
+                      {activeLesson.video_url && (
+                        <a href={activeLesson.video_url} target="_blank" rel="noopener noreferrer" style={{ background: T.primary, color: "#fff", padding: "8px 16px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 600 }}>Open Link in New Tab</a>
+                      )}
+                    </>
                   )}
                 </div>
               )}
