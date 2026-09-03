@@ -765,6 +765,22 @@ function CourseNavTab({ isInstructor }) {
     fetchLessons(mod.id);
   };
 
+  const moveModule = async (idx, dir, e) => {
+    e.stopPropagation();
+    const other = idx + dir;
+    if (other < 0 || other >= modules.length) return;
+    const a = modules[idx], b = modules[other];
+    await Promise.all([
+      api.patch(`/modules/${a.id}/order`, { order_index: other }),
+      api.patch(`/modules/${b.id}/order`, { order_index: idx }),
+    ]);
+    setModules(ms => {
+      const copy = [...ms];
+      [copy[idx], copy[other]] = [{ ...copy[other], order_index: idx }, { ...copy[idx], order_index: other }];
+      return copy;
+    });
+  };
+
   const saveLesson = async () => {
     if (!lesForm.title || !activeMod) return;
     let deadline = null;
@@ -948,6 +964,12 @@ function CourseNavTab({ isInstructor }) {
                   <div style={{ fontWeight: 800, fontSize: 14, color: T.text, textTransform: "uppercase", letterSpacing: "0.04em", fontFamily: "'Nunito',sans-serif" }}>{mod.title}</div>
                   <div style={{ color: T.text3, fontSize: 12, marginTop: 2 }}>{mod.lesson_count || 0} lessons{mod.description ? ` · ${mod.description}` : ""}</div>
                 </div>
+                {isInstructor && (
+                  <div style={{ display: "flex", gap: 4, flexShrink: 0, marginRight: 8 }}>
+                    <button onClick={e => moveModule(idx, -1, e)} disabled={idx === 0} title="Move up" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, color: idx === 0 ? T.text3 : T.text2, cursor: idx === 0 ? "default" : "pointer", padding: "4px 7px", fontSize: 12, fontFamily: "'Inter',sans-serif", opacity: idx === 0 ? 0.5 : 1 }}>↑</button>
+                    <button onClick={e => moveModule(idx, 1, e)} disabled={idx === modules.length - 1} title="Move down" style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, color: idx === modules.length - 1 ? T.text3 : T.text2, cursor: idx === modules.length - 1 ? "default" : "pointer", padding: "4px 7px", fontSize: 12, fontFamily: "'Inter',sans-serif", opacity: idx === modules.length - 1 ? 0.5 : 1 }}>↓</button>
+                  </div>
+                )}
                 <div style={{ width: 28, height: 28, borderRadius: "50%", background: isOpen ? `linear-gradient(135deg, ${c1}, ${c2})` : T.bg3, display: "flex", alignItems: "center", justifyContent: "center", color: isOpen ? "#fff" : T.text3, fontSize: 14, transition: "all .2s", flexShrink: 0 }}>
                   {isOpen ? "−" : "+"}
                 </div>
