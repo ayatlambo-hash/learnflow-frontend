@@ -1130,7 +1130,7 @@ function InstructorLessonModal({ lesson, onClose, onSaved }) {
                   rows={4}
                   style={{ width: "100%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box", resize: "vertical" }} />
               </div>
-              <Btn onClick={saveUrl} color={tc.color} disabled={!form.url}>💾 Save</Btn>
+              <Btn onClick={saveUrl} color={tc.color}>💾 Save</Btn>
             </>
           )}
 
