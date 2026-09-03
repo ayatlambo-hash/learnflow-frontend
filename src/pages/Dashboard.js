@@ -105,8 +105,13 @@ function isGoogleDrive(url) {
   return url && (url.includes('drive.google.com') || url.includes('docs.google.com'));
 }
 
+function getUrls(str) {
+  if (!str) return [];
+  return str.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
+}
+
 function VideoModal({ lesson, onClose, onComplete }) {
-  const embedUrl = getEmbedUrl(lesson.video_url);
+  const urls = getUrls(lesson.video_url);
   return (
     <Modal onClose={onClose} title={lesson.title}>
       {lesson.instructions && (
@@ -115,28 +120,36 @@ function VideoModal({ lesson, onClose, onComplete }) {
           <div style={{ color: T.text, fontSize: 13, whiteSpace: "pre-wrap" }}>{lesson.instructions}</div>
         </div>
       )}
-      <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", marginBottom: 16, background: "#000", border: `1px solid ${T.border}` }}>
-        {embedUrl ? (
-          <iframe width="100%" height="100%" src={embedUrl} title="Video" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
-        ) : (
-          <div style={{ background: "#1e293b", width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
-            {isGoogleDrive(lesson.video_url) ? (
-              <>
-                <div style={{ fontSize: 32, marginBottom: -4 }}>📁</div>
-                <div style={{ color: "#e2e8f0", fontSize: 14, fontWeight: 600 }}>Google Drive Video</div>
-                <a href={lesson.video_url} target="_blank" rel="noopener noreferrer" style={{ background: "#3b82f6", color: "#fff", padding: "10px 20px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 700, boxShadow: "0 4px 12px rgba(59,130,246,0.3)" }}>▶ Open Video in Google Drive</a>
-              </>
+      {urls.length === 0 && (
+        <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", marginBottom: 16, background: "#1e293b", border: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ color: "#94a3b8", fontSize: 13 }}>No embeddable video URL</div>
+        </div>
+      )}
+      {urls.map((url, i) => {
+        const embedUrl = getEmbedUrl(url);
+        return (
+          <div key={i} style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", marginBottom: 16, background: "#000", border: `1px solid ${T.border}` }}>
+            {embedUrl ? (
+              <iframe width="100%" height="100%" src={embedUrl} title={`Video ${i+1}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
             ) : (
-              <>
-                <div style={{ color: "#94a3b8", fontSize: 13 }}>No embeddable video URL</div>
-                {lesson.video_url && (
-                  <a href={lesson.video_url} target="_blank" rel="noopener noreferrer" style={{ background: T.primary, color: "#fff", padding: "8px 16px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 600 }}>Open Link in New Tab</a>
+              <div style={{ background: "#1e293b", width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+                {isGoogleDrive(url) ? (
+                  <>
+                    <div style={{ fontSize: 32, marginBottom: -4 }}>📁</div>
+                    <div style={{ color: "#e2e8f0", fontSize: 14, fontWeight: 600 }}>Google Drive Video</div>
+                    <a href={url} target="_blank" rel="noopener noreferrer" style={{ background: "#3b82f6", color: "#fff", padding: "10px 20px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 700, boxShadow: "0 4px 12px rgba(59,130,246,0.3)" }}>▶ Open Video in Google Drive</a>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ color: "#94a3b8", fontSize: 13 }}>No embeddable video URL</div>
+                    <a href={url} target="_blank" rel="noopener noreferrer" style={{ background: T.primary, color: "#fff", padding: "8px 16px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 600 }}>Open Link in New Tab</a>
+                  </>
                 )}
-              </>
+              </div>
             )}
           </div>
-        )}
-      </div>
+        );
+      })}
       <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
         <span style={{ color: T.text3, fontSize: 13 }}>{lesson.duration || ""}</span>
         <button onClick={() => { onComplete && onComplete(); onClose(); }} style={{ marginLeft: "auto", background: T.green, border: "none", borderRadius: 8, color: "#fff", padding: "8px 18px", cursor: "pointer", fontFamily: "'Inter',sans-serif", fontWeight: 600, fontSize: 13 }}>✓ Mark Complete</button>
@@ -1394,28 +1407,36 @@ function ModulesTab({ isInstructor }) {
         )}
         {activeLesson?.type === "video" && !isInstructor && (
           <Modal onClose={() => setActiveLesson(null)} title={activeLesson.title}>
-            <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", marginBottom: 16, background: "#000" }}>
-              {getEmbedUrl(activeLesson.video_url) ? (
-                <iframe width="100%" height="100%" src={getEmbedUrl(activeLesson.video_url)} title={activeLesson.title} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
-              ) : (
-                <div style={{ background: "#1e293b", width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
-                  {isGoogleDrive(activeLesson.video_url) ? (
-                    <>
-                      <div style={{ fontSize: 32, marginBottom: -4 }}>📁</div>
-                      <div style={{ color: "#e2e8f0", fontSize: 14, fontWeight: 600 }}>Google Drive Video</div>
-                      <a href={activeLesson.video_url} target="_blank" rel="noopener noreferrer" style={{ background: "#3b82f6", color: "#fff", padding: "10px 20px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 700, boxShadow: "0 4px 12px rgba(59,130,246,0.3)" }}>▶ Open Video in Google Drive</a>
-                    </>
+            {getUrls(activeLesson.video_url).length === 0 && (
+              <div style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", marginBottom: 16, background: "#1e293b", border: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ color: "#94a3b8", fontSize: 13 }}>No embeddable video URL</div>
+              </div>
+            )}
+            {getUrls(activeLesson.video_url).map((url, i) => {
+              const embedUrl = getEmbedUrl(url);
+              return (
+                <div key={i} style={{ borderRadius: 10, overflow: "hidden", aspectRatio: "16/9", marginBottom: 16, background: "#000", border: `1px solid ${T.border}` }}>
+                  {embedUrl ? (
+                    <iframe width="100%" height="100%" src={embedUrl} title={`Video ${i+1}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{ display: "block" }} />
                   ) : (
-                    <>
-                      <div style={{ color: "#94a3b8", fontSize: 13 }}>No embeddable video URL</div>
-                      {activeLesson.video_url && (
-                        <a href={activeLesson.video_url} target="_blank" rel="noopener noreferrer" style={{ background: T.primary, color: "#fff", padding: "8px 16px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 600 }}>Open Link in New Tab</a>
+                    <div style={{ background: "#1e293b", width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+                      {isGoogleDrive(url) ? (
+                        <>
+                          <div style={{ fontSize: 32, marginBottom: -4 }}>📁</div>
+                          <div style={{ color: "#e2e8f0", fontSize: 14, fontWeight: 600 }}>Google Drive Video</div>
+                          <a href={url} target="_blank" rel="noopener noreferrer" style={{ background: "#3b82f6", color: "#fff", padding: "10px 20px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 700, boxShadow: "0 4px 12px rgba(59,130,246,0.3)" }}>▶ Open Video in Google Drive</a>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ color: "#94a3b8", fontSize: 13 }}>No embeddable video URL</div>
+                          <a href={url} target="_blank" rel="noopener noreferrer" style={{ background: T.primary, color: "#fff", padding: "8px 16px", borderRadius: 8, fontSize: 13, textDecoration: "none", fontWeight: 600 }}>Open Link in New Tab</a>
+                        </>
                       )}
-                    </>
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
+              );
+            })}
             {/* Progress mini-bar */}
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#94a3b8", marginBottom: 6 }}>
               <span>Activity {activeLessonIdx + 1} of {lessons.length}</span>
